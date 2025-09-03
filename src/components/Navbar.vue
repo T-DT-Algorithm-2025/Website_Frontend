@@ -55,8 +55,8 @@
             <li class="nav-item" :class="{ 'active': $route.path === '/joinus' }">
               <router-link to="/joinus" class="nav-link">Join Us</router-link>
             </li>
-            <li class="nav-item">
-              <a href="#" class="nav-link">Login</a>
+            <li class="nav-item" :class="{ 'active': $route.path === '/login' }">
+              <router-link to="/login" class="nav-link">Login</router-link>
             </li>
           </ul>
         </div>
@@ -188,7 +188,7 @@ const toggleMenu = () => {
   font-family: 'ROBOTECH GP', 'Robotech', 'Arial', sans-serif;
   font-size: 2rem;
   font-weight: bold;
-  background: linear-gradient(135deg, #f8b400 0%, #ff6b35 100%);
+  background: linear-gradient(135deg,rgb(255, 241, 183) 0%, #ffe789 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
