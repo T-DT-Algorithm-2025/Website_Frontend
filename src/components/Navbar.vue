@@ -28,9 +28,9 @@
     <!-- 主导航栏 -->
     <nav class="main-navbar">
       <div class="container">
-        <a class="navbar-brand" href="#" @click.prevent="changePage('home')">
+        <router-link class="navbar-brand" to="/">
           <span class="brand-text">T-DT</span>
-        </a>
+        </router-link>
         
         <button class="navbar-toggler" @click="toggleMenu" :class="{ 'active': isMenuOpen }">
           <span></span>
@@ -40,23 +40,23 @@
 
         <div class="navbar-collapse" :class="{ 'show': isMenuOpen }">
           <ul class="navbar-nav">
-            <li class="nav-item" :class="{ 'active': currentPage === 'home' }">
-              <a href="#" class="nav-link" @click.prevent="changePage('home')">Home</a>
+            <li class="nav-item" :class="{ 'active': $route.path === '/' }">
+              <router-link to="/" class="nav-link">Home</router-link>
             </li>
-            <li class="nav-item" :class="{ 'active': currentPage === 'about' }">
-              <a href="#" class="nav-link" @click.prevent="changePage('about')">About</a>
+            <li class="nav-item" :class="{ 'active': $route.path === '/about' }">
+              <router-link to="/about" class="nav-link">About</router-link>
             </li>
-            <li class="nav-item" :class="{ 'active': currentPage === 'faq' }">
-              <a href="#" class="nav-link" @click.prevent="changePage('faq')">FAQ</a>
+            <li class="nav-item" :class="{ 'active': $route.path === '/faq' }">
+              <router-link to="/faq" class="nav-link">FAQ</router-link>
             </li>
-            <li class="nav-item" :class="{ 'active': currentPage === 'contact' }">
-              <a href="#" class="nav-link" @click.prevent="changePage('contact')">Contact</a>
+            <li class="nav-item" :class="{ 'active': $route.path === '/contact' }">
+              <router-link to="/contact" class="nav-link">Contact</router-link>
             </li>
-            <li class="nav-item" :class="{ 'active': currentPage === 'joinus' }">
-              <a href="#" class="nav-link" @click.prevent="changePage('joinus')">Join Us</a>
+            <li class="nav-item" :class="{ 'active': $route.path === '/joinus' }">
+              <router-link to="/joinus" class="nav-link">Join Us</router-link>
             </li>
-            <li class="nav-item" :class="{ 'active': currentPage === 'login' }">
-              <a href="#" class="nav-link" @click.prevent="changePage('login')">Login</a>
+            <li class="nav-item">
+              <a href="#" class="nav-link">Login</a>
             </li>
           </ul>
         </div>
@@ -67,21 +67,13 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRoute } from 'vue-router'
 
+const route = useRoute()
 const isMenuOpen = ref(false)
-const currentPage = ref('home')
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value
-}
-
-// 定义emit事件
-const emit = defineEmits(['page-change'])
-
-const changePage = (page) => {
-  currentPage.value = page
-  emit('page-change', page)
-  isMenuOpen.value = false // 关闭移动端菜单
 }
 </script>
 
