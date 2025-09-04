@@ -55,8 +55,12 @@
             <li class="nav-item" :class="{ 'active': $route.path === '/joinus' }">
               <router-link to="/joinus" class="nav-link">Join Us</router-link>
             </li>
-            <li class="nav-item" :class="{ 'active': $route.path === '/login' }">
+            <!-- 根据登录状态显示登录链接或用户头像 -->
+            <li class="nav-item" v-if="!isLoggedIn">
               <router-link to="/login" class="nav-link">Login</router-link>
+            </li>
+            <li class="nav-item" v-else>
+              <UserAvatar @logout="handleLogout" @login-success="handleLoginSuccess" />
             </li>
           </ul>
         </div>
@@ -66,14 +70,43 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import UserAvatar from './UserAvatar.vue'
+import { authAPI } from '../api/auth.js'
 
 const route = useRoute()
 const isMenuOpen = ref(false)
+const isLoggedIn = ref(false)
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value
+}
+
+// 检查用户登录状态
+const checkLoginStatus = async () => {
+  try {
+    const result = await authAPI.getUserInfo()
+    isLoggedIn.value = result.success
+  } catch (error) {
+    console.error('检查登录状态失败:', error)
+    isLoggedIn.value = false
+  }
+}
+
+// 组件挂载时检查登录状态
+onMounted(() => {
+  checkLoginStatus()
+})
+
+// 处理登出事件
+const handleLogout = () => {
+  isLoggedIn.value = false
+}
+
+// 处理登录成功事件
+const handleLoginSuccess = () => {
+  isLoggedIn.value = true
 }
 </script>
 

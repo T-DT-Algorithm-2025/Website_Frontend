@@ -8,7 +8,7 @@
           <h1 class="main-title">Join Us</h1>
           <div class="breadcrumbs">
             <span class="breadcrumb-item">
-              <a href="#home">Home</a>
+              <a href="/">Home</a>
               <i class="arrow-icon">→</i>
             </span>
             <span class="breadcrumb-item">Join Us</span>

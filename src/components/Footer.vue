@@ -4,7 +4,7 @@
       <div class="footer-row">
         <div class="footer-col text-center">
           <p class="copyright">Copyright &copy; 2025.T-DT创新实验室 All rights reserved.</p>
-          <a href="https://beian.miit.gov.cn/" class="beian-link" target="_blank">辽ICP备2024045383号-1</a>
+          <p class="copyright">辽ICP备2024045383号-1</p>
         </div>
       </div>
     </div>

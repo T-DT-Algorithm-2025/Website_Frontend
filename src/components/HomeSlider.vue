@@ -151,7 +151,7 @@ h1 {
   background: rgba(255, 255, 255, 0.2);
   width: 50px;
   height: 50px;
-  border-radius: 50%;
+  border-radius: 0;
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
 }
