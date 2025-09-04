@@ -1,7 +1,7 @@
 <template>
-  <div class="user-avatar-container" @mouseenter="showDropdown = true" @mouseleave="showDropdown = false">
+  <div class="user-avatar-container">
     <!-- 用户头像 -->
-    <div class="avatar-wrapper">
+    <div class="avatar-wrapper" @mouseenter="showDropdown = true">
       <img 
         :src="avatarUrl" 
         :alt="userInfo?.nickname || '用户头像'"
@@ -13,13 +13,16 @@
     </div>
     
     <!-- 下拉菜单 -->
-    <div class="dropdown-menu" v-show="showDropdown">
+    <div 
+      class="dropdown-menu" 
+      v-show="showDropdown"
+      @mouseenter="showDropdown = true"
+      @mouseleave="showDropdown = false"
+    >
       <div class="dropdown-item" @click="goToProfile">
-        <span class="icon">👤</span>
         个人中心
       </div>
       <div class="dropdown-item" @click="handleLogout">
-        <span class="icon">🚪</span>
         登出
       </div>
     </div>
@@ -98,15 +101,18 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   cursor: pointer;
+  height: 100%;
 }
 
 .avatar-wrapper {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem;
-  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
   transition: all 0.3s ease;
+  height: 100%;
+  align-items: center;
 }
 
 .avatar-wrapper:hover {
@@ -114,8 +120,8 @@ onMounted(async () => {
 }
 
 .user-avatar {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #f8b400;
@@ -129,11 +135,11 @@ onMounted(async () => {
 
 .dropdown-arrow {
   color: #f8b400;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   transition: transform 0.3s ease;
 }
 
-.user-avatar-container:hover .dropdown-arrow {
+.avatar-wrapper:hover .dropdown-arrow {
   transform: rotate(180deg);
 }
 
@@ -145,21 +151,19 @@ onMounted(async () => {
   backdrop-filter: blur(10px);
   border-radius: 8px;
   padding: 0.5rem 0;
-  min-width: 150px;
+  min-width: 120px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   z-index: 1001;
   margin-top: 0.5rem;
 }
 
 .dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
   padding: 0.75rem 1rem;
   color: #fff;
   font-size: 0.9rem;
   transition: all 0.3s ease;
   cursor: pointer;
+  text-align: center;
 }
 
 .dropdown-item:hover {
@@ -167,19 +171,15 @@ onMounted(async () => {
   color: #f8b400;
 }
 
-.dropdown-item .icon {
-  font-size: 1rem;
-}
-
 /* 响应式设计 */
 @media (max-width: 768px) {
   .user-avatar {
-    width: 35px;
-    height: 35px;
+    width: 28px;
+    height: 28px;
   }
   
   .dropdown-menu {
-    min-width: 130px;
+    min-width: 110px;
   }
   
   .dropdown-item {

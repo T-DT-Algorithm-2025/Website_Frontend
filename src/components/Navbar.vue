@@ -273,6 +273,9 @@ const handleLoginSuccess = () => {
 
 .nav-item {
   position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
 }
 
 .nav-link {
@@ -284,6 +287,9 @@ const handleLoginSuccess = () => {
   transition: all 0.3s ease;
   position: relative;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  height: 100%;
 }
 
 .nav-link:hover {
