@@ -63,8 +63,7 @@ const handleAvatarError = () => {
 
 // 跳转到个人中心
 const goToProfile = () => {
-  // 个人中心页面还没写，暂时不跳转
-  console.log('跳转到个人中心')
+  router.push('/profile')
 }
 
 // 处理登出

@@ -72,5 +72,29 @@ export const authAPI = {
       console.error('获取用户信息时出错:', error)
       return { success: false, error: '网络错误，请稍后重试' }
     }
+  },
+
+  // 更新用户信息
+  async updateUserInfo(updateData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/user/info/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData)
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data }
+      } else {
+        return { success: false, error: data.error || '更新用户信息失败' }
+      }
+    } catch (error) {
+      console.error('更新用户信息时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
   }
 }

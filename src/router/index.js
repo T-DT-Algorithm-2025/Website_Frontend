@@ -5,6 +5,7 @@ import JoinUs from '../views/JoinUs.vue'
 import FAQ from '../views/FAQ.vue'
 import Contact from '../views/Contact.vue'
 import Login from '../views/Login.vue'
+import Profile from '../views/Profile.vue'
 
 const routes = [
   {
@@ -36,6 +37,11 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: Login
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: Profile
   }
 ]
 
