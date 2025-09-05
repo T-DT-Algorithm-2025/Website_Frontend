@@ -10,7 +10,7 @@
           <router-link to="/about" class="cta-button">关于我们</router-link>
           <router-link to="/joinus" class="cta-button secondary">加入我们</router-link>
           <router-link to="/faq" class="cta-button accent">常见问题</router-link>
-          <router-link to="/contact" class="cta-button info">联系我们</router-link>
+          <router-link to="/contact" class="cta-button info">联系方式</router-link>
         </div>
       </div>
     </section>

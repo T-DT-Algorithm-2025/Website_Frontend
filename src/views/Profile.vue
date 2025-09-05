@@ -293,7 +293,7 @@ onMounted(() => {
 <style scoped>
 .profile-container {
   display: flex;
-  min-height: calc(100vh - 200px);
+  min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   padding: 2rem;
   gap: 2rem;
