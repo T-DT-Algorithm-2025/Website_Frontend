@@ -110,8 +110,8 @@ onMounted(async () => {
   padding: 0.5rem 1rem;
   border-radius: 6px;
   transition: all 0.3s ease;
-  height: 100%;
-  align-items: center;
+  height: 44px; /* 固定高度确保与其他导航项对齐 */
+  min-height: 44px;
 }
 
 .avatar-wrapper:hover {
@@ -119,12 +119,13 @@ onMounted(async () => {
 }
 
 .user-avatar {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #f8b400;
   transition: all 0.3s ease;
+  flex-shrink: 0; /* 防止头像被压缩 */
 }
 
 .user-avatar:hover {
@@ -172,9 +173,15 @@ onMounted(async () => {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+  .avatar-wrapper {
+    padding: 0.5rem 0.8rem;
+    height: 40px;
+    min-height: 40px;
+  }
+  
   .user-avatar {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
   }
   
   .dropdown-menu {

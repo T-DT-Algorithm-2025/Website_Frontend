@@ -41,26 +41,26 @@
         <div class="navbar-collapse" :class="{ 'show': isMenuOpen }">
           <ul class="navbar-nav">
             <li class="nav-item" :class="{ 'active': $route.path === '/' }">
-              <router-link to="/" class="nav-link">Home</router-link>
+              <router-link to="/" class="nav-link" @click="closeMenu">Home</router-link>
             </li>
             <li class="nav-item" :class="{ 'active': $route.path === '/about' }">
-              <router-link to="/about" class="nav-link">About</router-link>
+              <router-link to="/about" class="nav-link" @click="closeMenu">About</router-link>
             </li>
             <li class="nav-item" :class="{ 'active': $route.path === '/faq' }">
-              <router-link to="/faq" class="nav-link">FAQ</router-link>
+              <router-link to="/faq" class="nav-link" @click="closeMenu">FAQ</router-link>
             </li>
             <li class="nav-item" :class="{ 'active': $route.path === '/contact' }">
-              <router-link to="/contact" class="nav-link">Contact</router-link>
+              <router-link to="/contact" class="nav-link" @click="closeMenu">Contact</router-link>
             </li>
             <li class="nav-item" :class="{ 'active': $route.path === '/joinus' }">
-              <router-link to="/joinus" class="nav-link">Join Us</router-link>
+              <router-link to="/joinus" class="nav-link" @click="closeMenu">Join Us</router-link>
             </li>
             <!-- 根据登录状态显示登录链接或用户头像 -->
             <li class="nav-item" v-if="!isLoggedIn">
-              <router-link to="/login" class="nav-link">Login</router-link>
+              <router-link to="/login" class="nav-link" @click="closeMenu">Login</router-link>
             </li>
             <li class="nav-item" v-else>
-              <UserAvatar @logout="handleLogout" @login-success="handleLoginSuccess" />
+              <UserAvatar @logout="handleLogout" @login-success="handleLoginSuccess" @click="closeMenu" />
             </li>
           </ul>
         </div>
@@ -70,7 +70,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import UserAvatar from './UserAvatar.vue'
 import { authAPI } from '../api/auth.js'
@@ -81,6 +81,19 @@ const isLoggedIn = ref(false)
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value
+}
+
+// 关闭菜单
+const closeMenu = () => {
+  isMenuOpen.value = false
+}
+
+// 点击外部区域关闭菜单
+const handleClickOutside = (event) => {
+  const navbar = event.target.closest('.navbar-wrapper')
+  if (!navbar && isMenuOpen.value) {
+    closeMenu()
+  }
 }
 
 // 检查用户登录状态
@@ -94,14 +107,21 @@ const checkLoginStatus = async () => {
   }
 }
 
-// 组件挂载时检查登录状态
+// 组件挂载时检查登录状态并添加事件监听
 onMounted(() => {
   checkLoginStatus()
+  document.addEventListener('click', handleClickOutside)
+})
+
+// 组件卸载时移除事件监听
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
 })
 
 // 处理登出事件
 const handleLogout = () => {
   isLoggedIn.value = false
+  closeMenu() // 登出时关闭菜单
 }
 
 // 处理登录成功事件
@@ -275,7 +295,8 @@ const handleLoginSuccess = () => {
   position: relative;
   display: flex;
   align-items: center;
-  height: 100%;
+  height: 44px; /* 固定高度确保一致对齐 */
+  min-height: 44px;
 }
 
 .nav-link {
@@ -290,6 +311,7 @@ const handleLoginSuccess = () => {
   display: flex;
   align-items: center;
   height: 100%;
+  line-height: 1.4; /* 确保文本垂直居中 */
 }
 
 .nav-link:hover {
@@ -312,6 +334,12 @@ const handleLoginSuccess = () => {
   
   .navbar-toggler {
     display: flex;
+    z-index: 1003; /* 确保按钮在菜单之上 */
+    position: relative;
+    min-width: 44px; /* 最小触摸目标 */
+    min-height: 44px;
+    justify-content: center;
+    align-items: center;
   }
   
   .navbar-collapse {
@@ -325,13 +353,16 @@ const handleLoginSuccess = () => {
     padding: 1rem;
     transform: translateY(-100%);
     opacity: 0;
+    visibility: hidden; /* 隐藏时不可交互 */
     transition: all 0.3s ease;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 1002; /* 确保在其他元素之上 */
   }
   
   .navbar-collapse.show {
     transform: translateY(0);
     opacity: 1;
+    visibility: visible; /* 显示时可交互 */
   }
   
   .navbar-nav {
@@ -340,10 +371,27 @@ const handleLoginSuccess = () => {
     width: 100%;
   }
   
+  .nav-item {
+    height: auto; /* 移动端允许自适应高度 */
+    min-height: 40px;
+  }
+  
   .nav-link {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     text-align: center;
     padding: 1rem;
+    height: auto;
+    min-height: 44px; /* 最小触摸目标 */
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+  
+  .nav-link:hover,
+  .nav-link:active {
+    background: rgba(248, 180, 0, 0.2);
+    transform: none; /* 移动端不使用 translateY */
   }
   
   .brand-text {
