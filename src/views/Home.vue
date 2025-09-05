@@ -6,7 +6,6 @@
     <section class="content-section">
       <div class="container">
         <h2>欢迎来到 T-DT</h2>
-        <p>打造现代化、炫酷、美观的网站体验</p>
         <div class="button-group">
           <router-link to="/about" class="cta-button">关于我们</router-link>
           <router-link to="/joinus" class="cta-button secondary">加入我们</router-link>
