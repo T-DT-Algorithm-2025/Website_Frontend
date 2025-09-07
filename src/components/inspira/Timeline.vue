@@ -48,12 +48,11 @@
           <Motion
             as="div"
             :style="{
-              height: heightTransform,
-              opacity: opacityTransform,
+              height: `${height}px`,
+              opacity: 1,
             }"
             class="absolute inset-x-0 top-0 w-[2px] rounded-full bg-gradient-to-t from-purple-500 from-0% via-blue-500 via-10% to-transparent"
-          >
-          </Motion>
+          />
         </div>
       </div>
     </div>

@@ -140,7 +140,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import Timeline from "../components/inspira/Timeline.vue";
-const selectedAward = ref(null)
+const selectedAward = ref<number | null>(null)
 const data = [
   {
     id: "2015",
@@ -328,7 +328,7 @@ const awards = [
   }
 ]
 
-const selectAward = (index) => {
+const selectAward = (index: number) => {
   selectedAward.value = index
 }
 
