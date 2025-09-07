@@ -16,7 +16,7 @@
         </div>
       </div>
     </section>
-
+    
     <!-- About Section -->
     <section class="about-section">
       <div class="container">
@@ -26,16 +26,15 @@
             <h2 class="main-heading">T-DT 创新实验室</h2>
           </div>
           <p class="about-description">
-            东北大学T-DT创新实验室成立于2012年,历经12年,汇聚了多名来自东北大学机械自动化,
-            控制工程等一流学科的优秀学生。实验室共分为机械、电控、算法、运营等四个部门,
-            给学生提供了可以自我研发,自我展示的高水平平台,旨在培养出有独特主张,丰富想象力,
-            超凡创造力的优秀青年工程师。实验室不断取得各项优秀成果,被校内多位领导与老师给予高度评价。
+            T-DT机器人创新团队( Thinking - Doing to Theory )是东北大学创新创业学院下辖的创新团队之一，成立于2012年，汇聚了东北大学包括机械，信息，计算机和软件在内的各个学院的优秀学生。团队共分为机械、电控、算法、运营等四个部门和七个技术兵种组，给学生提供了可以自我研发，自我展示的平台，旨在培养出有独特主张，丰富想象力，超凡创造力的优秀青年工程师。自成立以来，团队技术成果丰硕，多次在国际级和国家级竞赛中斩获冠军，被莅临参观的校内外各级领导与老师给予高度评价。
           </p>
         </div>
       </div>
     </section>
-
-    <!-- Awards Timeline Section -->
+    <component is="script">
+        console.log("P")
+    </component>
+    <!-- Awards Timeline Section
     <section class="awards-section">
       <div class="container">
         <div class="awards-header">
@@ -79,8 +78,38 @@
           </a>
         </div>
       </div>
-    </section>
-
+    </section> -->
+    <div class="h-fit w-full">
+    <Timeline
+      :items="data"
+      title="历年获奖记录"
+      description="T-DT团队自2015年以来的辉煌成就"
+    >
+      <template
+        v-for="(item, index) in data"
+        :key="item.id + 'template'"
+        #[item.id]
+      >
+        <div class="relative w-full pl-20 pr-4 md:pl-4">
+          <div class="mb-4">
+            <ul class="space-y-2">
+              <li
+                v-for="(award, awardIndex) in item.awards"
+                :key="awardIndex"
+                class="flex items-start"
+              >
+                <span class="inline-block w-2 h-2 bg-yellow-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                <span class="text-sm text-neutral-700 dark:text-neutral-300">{{ award }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <p v-if="item.detail" class="mb-8 text-xs font-normal text-neutral-800 md:text-sm dark:text-neutral-200 italic text-gray-500">
+          {{ item.detail }}
+        </p>
+      </template>
+    </Timeline>
+  </div>
     <!-- Statistics Section -->
     <section class="stats-section">
       <div class="overlay"></div>
@@ -108,11 +137,134 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
-
+import Timeline from "../components/inspira/Timeline.vue";
 const selectedAward = ref(null)
-
+const data = [
+  {
+    id: "2015",
+    label: "2015年",
+    awards: [
+      "全国互联网+大学生创新创业竞赛全国金奖",
+      "全国大学生机器人大赛RoboMaster机甲大师超级对抗赛 小组赛 二等奖",
+      "RoboMaster机甲大师超级对抗赛区域赛（东北赛区） 冠军 一等奖",
+      "挑战杯全国大学生课外学术科技作品竞赛三等奖"
+    ],
+    detail: ""
+  },
+  {
+    id: "2016",
+    label: "2016年",
+    awards: [
+      "全国大学生机器人大赛RoboMaster机甲大师超级对抗赛 八强 一等奖",
+      "RoboMaster机甲大师超级对抗赛区域赛（北部赛区） 冠军 一等奖"
+    ],
+    detail: ""
+  },
+  {
+    id: "2017",
+    label: "2017年",
+    awards: [
+      "IEEE-ICRA国际机器人技术挑战赛世界冠军、特别大奖",
+      "全国大学生机器人大赛RoboMaster机甲大师超级对抗赛 八强 一等奖",
+      "RoboMaster机甲大师超级对抗赛区域赛（北部赛区） 亚军 一等奖"
+    ],
+    detail: ""
+  },
+  {
+    id: "2018",
+    label: "2018年",
+    awards: [
+      "全国大学生机器人大赛RoboMaster机甲大师超级对抗赛 国际亚军 特等奖",
+      "RoboMaster机甲大师超级对抗赛区域赛（北部赛区） 八强 一等奖"
+    ],
+    detail: ""
+  },
+  {
+    id: "2019",
+    label: "2019年",
+    awards: [
+      "全国大学生机器人大赛RoboMaster机甲大师超级对抗赛 国际冠军 特等奖",
+      "ICRA 2019 RoboMaster人工智能挑战赛 国际殿军 一等奖",
+      "RoboMaster机甲大师超级对抗赛区域赛（北部赛区） 冠军 一等奖",
+      "全国大学生机器人大赛RoboMaster机甲大师单项赛 步兵竞速与射击 一等奖",
+      "全国大学生机器人大赛RoboMaster机甲大师单项赛 英雄远程射击 一等奖",
+      "全国大学生机器人大赛RoboMaster机甲大师单项赛 工程攀岛取弹 一等奖"
+    ],
+    detail: "T-DT首次获得RoboMaster超级对抗赛冠军"
+  },
+  {
+    id: "2020",
+    label: "2020年",
+    awards: [
+      "全国大学生机器人大赛RoboMaster机甲大师超级对抗赛 冠军 一等奖"
+    ],
+    detail: "疫情原因，2020年采取线上评审比赛"
+  },
+  {
+    id: "2021",
+    label: "2021年",
+    awards: [
+      "全国大学生机器人大赛RoboMaster机甲大师超级对抗赛 殿军 一等奖",
+      "ICRA 2021 RoboMaster人工智能挑战赛 八强 二等奖",
+      "RoboMaster机甲大师超级对抗赛区域赛（北部赛区） 亚军 一等奖",
+      "RoboMaster机甲大师高校联盟赛（辽宁站）3V3对抗赛 冠军 一等奖",
+      "RoboMaster机甲大师高校联盟赛（辽宁站）步兵对抗赛 亚军 一等奖"
+    ],
+    detail: ""
+  },
+  {
+    id: "2022",
+    label: "2022年",
+    awards: [
+      "ICRA 2022 RoboMaster人工智能挑战赛 八强 二等奖",
+      "RoboMaster机甲大师超级对抗赛区域赛（南部赛区） 冠军 一等奖",
+      "全国大学生机器人大赛RoboMaster机甲大师超级对抗赛 一等奖",
+      "全国大学生机器人大赛RoboMaster机甲大师高校单项赛 步兵竞速与射击 一等奖",
+      "全国大学生机器人大赛RoboMaster机甲大师高校单项赛 （平衡）步兵竞速与射击 一等奖",
+      "全国大学生机器人大赛RoboMaster机甲大师高校单项赛 工程取矿 一等奖",
+      "全国大学生机器人大赛RoboMaster机甲大师高校单项赛 英雄远程射击 二等奖",
+      "全国大学生机器人大赛RoboMaster机甲大师高校单项赛 飞镖打靶 二等奖"
+    ],
+    detail: "由于疫情，部分比赛当年未举办，由区域赛成绩获评"
+  },
+  {
+    id: "2023",
+    label: "2023年",
+    awards: [
+      "全国大学生机器人大赛RoboMaster机甲大师超级对抗赛 亚军 一等奖",
+      "RoboMaster机甲大师超级对抗赛区域赛（北部赛区） 冠军 一等奖",
+      "RoboMaster机甲大师高校联盟赛（辽宁站）3V3对抗赛 冠军 一等奖",
+      "RoboMaster机甲大师高校联盟赛（辽宁站）步兵对抗赛 冠军 一等奖",
+      "全国大学生机器人科技创新交流营暨机器人大赛 特等奖",
+      "全国大学生智能车竞赛中获全国总决赛智慧巡检（高教组）比赛 一等奖"
+    ],
+    detail: ""
+  },
+  {
+    id: "2024",
+    label: "2024年",
+    awards: [
+      "全国大学生机器人大赛RoboMaster机甲大师超级对抗赛 季军 一等奖",
+      "RoboMaster机甲大师超级对抗赛区域赛（南部赛区） 亚军 一等奖",
+      "RoboMaster机甲大师高校联盟赛（辽宁站）3V3对抗赛 季军 一等奖",
+      "RoboMaster机甲大师高校联盟赛（辽宁站）步兵对抗赛 殿军 一等奖",
+      "全国大学生智能车竞赛中获全国总决赛智慧巡检（高教组）比赛 一等奖"
+    ],
+    detail: ""
+  },
+  {
+    id: "2025",
+    label: "2025年",
+    awards: [
+      "全国大学生机器人大赛RoboMaster机甲大师超级对抗赛 殿军 一等奖",
+      "RoboMaster机甲大师超级对抗赛区域赛（东部赛区） 八强 一等奖",
+      "RoboMaster机甲大师高校联盟赛（辽宁站）3V3对抗赛 冠军 一等奖"
+    ],
+    detail: ""
+  }
+];
 const awards = [
   {
     year: '2016',
