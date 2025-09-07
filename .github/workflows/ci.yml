@@ -43,6 +43,6 @@ jobs:
           host: ${{ secrets.SERVER_HOST }} # 从 secrets 中获取服务器 IP
           username: ${{ secrets.SERVER_USER }} # 从 secrets 中获取用户名
           key: ${{ secrets.SERVER_SSH_KEY }} # 从 secrets 中获取私钥
-          source: "dist/*" # 要传输的源文件，dist/ 下的所有文件
+          source: "dist/index.html,dist/assets/*.css,dist/assets/*.js" # 只传输HTML和CSS文件
           target: "/www/wwwroot/www.neutdt.cn" # 目标路径
           strip_components: 1 # 去掉源路径中的第一层目录 (dist)
