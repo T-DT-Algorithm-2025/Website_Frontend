@@ -1,13 +1,13 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import Home from '../views/Home.vue'
 import About from '../views/About.vue'
 import JoinUs from '../views/JoinUs.vue'
 import FAQ from '../views/FAQ.vue'
 import Contact from '../views/Contact.vue'
 import Login from '../views/Login.vue'
-import Profile from '../views/Profile.vue'
+import Show from '../views/Show.vue'
 
-const routes = [
+const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'Home',
@@ -39,9 +39,9 @@ const routes = [
     component: Login
   },
   {
-    path: '/profile',
-    name: 'Profile',
-    component: Profile
+    path: '/show',
+    name: 'Show',
+    component: Show
   }
 ]
 
