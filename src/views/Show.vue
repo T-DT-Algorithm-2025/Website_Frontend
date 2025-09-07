@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import IconCloud from "../components/IconCloud.vue";
+import IconCloud from "../components/inspira/IconCloud.vue";
 
 const slugs = [
   "typescript",
