@@ -7,25 +7,29 @@
           <div class="login-title">登录</div>
           <div class="form-group">
             <label for="username">账号</label>
-            <input 
-              type="text" 
-              id="username" 
-              v-model="username" 
-              placeholder="请输入账号" 
+            <IInput
+              type="text"
+              id="username"
+              v-model="username"
+              placeholder="请输入账号"
               required
-            >
+            />
           </div>
           <div class="form-group">
             <label for="password">密码</label>
-            <input 
-              type="password" 
-              id="password" 
-              v-model="password" 
-              placeholder="请输入密码" 
+            <IInput
+              type="password"
+              id="password"
+              v-model="password"
+              placeholder="请输入密码"
               required
-            >
+            />
           </div>
-          <button type="submit" class="login-btn">登录</button>
+          <InteractiveHoverButton
+            text="登录"
+            class="login-btn"
+            @click="handleLogin"
+          />
         </form>
       </div>
       <div class="login-right">
@@ -57,6 +61,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { authAPI } from '../api/auth.js'
+import IInput from '@/components/inspira/IInput.vue'
+import InteractiveHoverButton from '@/components/inspira/InteractiveHoverButton.vue'
 
 const router = useRouter()
 const username = ref('')
@@ -193,24 +199,24 @@ const handleWXLogin = () => {
 .login-btn {
   width: 100%;
   padding: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  border-radius: 12px;
-  color: white;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  color: white !important;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
   margin-top: 1rem;
 }
 
 .login-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3) !important;
 }
 
 .login-btn:active {
-  transform: translateY(0);
+  transform: translateY(0) !important;
 }
 
 .login-right {
