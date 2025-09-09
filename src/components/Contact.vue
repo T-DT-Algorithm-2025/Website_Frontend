@@ -30,7 +30,7 @@
               <div class="contact-icon">📍</div>
               <h3>Address</h3>
               <p>东北大学南湖校区科学馆301</p>
-              <p>东北大学浑南校区文法学院B138</p>
+              <p>东北大学浑南校区文管学馆B138</p>
             </div>
           </div>
           

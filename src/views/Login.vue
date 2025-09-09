@@ -83,7 +83,7 @@ const handleQQLogin = async () => {
     
     if (result.success) {
       // 设置成功，跳转到QQ授权页面
-      const qqAuthUrl = 'https://graph.qq.com/oauth2.0/show?which=Login&display=pc&response_type=code&client_id=102805991&redirect_uri=https%3A%2F%2Fwww.neutdt.cn%2Fapi%2Foauth%2Fqq%2Fcallback&scope=get_user_info'
+      const qqAuthUrl = 'https://graph.qq.com/oauth2.0/authorize?response_type=code&client_id=102805991&redirect_uri=https%3A%2F%2Fwww.neutdt.cn%2Fapi%2Foauth%2Fqq%2Fcallback&scope=get_user_info'
       window.open(qqAuthUrl, '_blank')
     } else {
       console.error('设置重定向URL失败:', result.error)

@@ -6,7 +6,7 @@ import FAQ from '../views/FAQ.vue'
 import Contact from '../views/Contact.vue'
 import Login from '../views/Login.vue'
 import Show from '../views/Show.vue'
-
+import Profile from '../views/Profile.vue'
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
@@ -42,6 +42,11 @@ const routes: RouteRecordRaw[] = [
     path: '/show',
     name: 'Show',
     component: Show
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: Profile
   }
 ]
 

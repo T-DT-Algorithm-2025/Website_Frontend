@@ -96,5 +96,173 @@ export const authAPI = {
       console.error('更新用户信息时出错:', error)
       return { success: false, error: '网络错误，请稍后重试' }
     }
+  },
+
+  // 获取招聘列表
+  async getRecruitList(onlyAvailable = false) {
+    try {
+      const url = new URL(`${API_BASE_URL}/recruit/list`)
+      if (onlyAvailable) {
+        url.searchParams.append('only_available', 'true')
+      }
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data: data.data }
+      } else {
+        return { success: false, error: data.error || '获取招聘列表失败' }
+      }
+    } catch (error) {
+      console.error('获取招聘列表时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 获取招聘详情
+  async getRecruitInfo(recruitId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/recruit/info/${recruitId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data: data.data }
+      } else {
+        return { success: false, error: data.error || '获取招聘详情失败' }
+      }
+    } catch (error) {
+      console.error('获取招聘详情时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 获取可申请的职位列表
+  async getPositions() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/recruit/positions`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data: data }
+      } else {
+        return { success: false, error: data.error || '获取职位列表失败' }
+      }
+    } catch (error) {
+      console.error('获取职位列表时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 提交招聘申请
+  async submitApplication(formData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/recruit/apply`, {
+        method: 'POST',
+        body: formData // 使用FormData，因为包含文件上传
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data }
+      } else {
+        return { success: false, error: data.error || '提交申请失败' }
+      }
+    } catch (error) {
+      console.error('提交申请时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // ========== 管理员招聘管理接口 ==========
+
+  // 创建新的招聘信息
+  async createRecruit(recruitData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/recruit/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(recruitData)
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data }
+      } else {
+        return { success: false, error: data.error || '创建招聘信息失败' }
+      }
+    } catch (error) {
+      console.error('创建招聘信息时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 更新指定招聘信息
+  async updateRecruit(recruitId, updateData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/recruit/${recruitId}/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData)
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data }
+      } else {
+        return { success: false, error: data.error || '更新招聘信息失败' }
+      }
+    } catch (error) {
+      console.error('更新招聘信息时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 删除指定招聘信息
+  async deleteRecruit(recruitId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/recruit/${recruitId}/delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data }
+      } else {
+        return { success: false, error: data.error || '删除招聘信息失败' }
+      }
+    } catch (error) {
+      console.error('删除招聘信息时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
   }
 }
