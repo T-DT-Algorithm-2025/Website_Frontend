@@ -352,5 +352,118 @@ export const authAPI = {
       console.error('下载文件时出错:', error)
       return { success: false, error: '网络错误，请稍后重试' }
     }
+  },
+
+  // ========== 绑定相关接口 ==========
+
+  // 设置登录绑定模式
+  async setLoginBundle(bundleName) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/login/bundle/set`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          bundle_name: bundleName
+        }),
+        credentials: 'include' // 包含cookies用于认证
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data }
+      } else {
+        return { success: false, error: data.error || '设置绑定模式失败' }
+      }
+    } catch (error) {
+      console.error('设置绑定模式时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 发送邮箱验证码
+  async sendVerificationCode(email) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/mail/verify/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mail: email
+        }),
+        credentials: 'include'
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data }
+      } else {
+        return { success: false, error: data.error || '发送验证码失败' }
+      }
+    } catch (error) {
+      console.error('发送验证码时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 邮箱绑定/注册
+  async registerWithEmail(email, password, verificationCode) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/login/mail/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mail: email,
+          pwd: password,
+          verification_code: verificationCode
+        }),
+        credentials: 'include'
+      })
+      
+      // 根据API文档，成功响应是302重定向，所以可能不会返回JSON
+      if (response.ok) {
+        return { success: true }
+      } else {
+        const data = await response.json()
+        return { success: false, error: data.error || '邮箱绑定失败' }
+      }
+    } catch (error) {
+      console.error('邮箱绑定时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 邮箱登录
+  async loginWithEmail(email, password) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/login/mail`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mail: email,
+          pwd: password
+        }),
+        credentials: 'include'
+      })
+      
+      // 根据API文档，成功响应是302重定向
+      if (response.ok) {
+        return { success: true }
+      } else {
+        const data = await response.json()
+        return { success: false, error: data.error || '邮箱或密码错误' }
+      }
+    } catch (error) {
+      console.error('邮箱登录时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
   }
 }

@@ -3,16 +3,15 @@
     <div class="overlay"></div>
     <div class="login-container">
       <div class="login-left">
-        <form class="login-box" @submit.prevent="handleLogin">
+        <form class="login-box" @submit.prevent="handleEmailLogin">
           <div class="login-title">登录</div>
-          <!-- 暂时注释账户密码登录功能 -->
-          <!-- <div class="form-group">
-            <label for="username">账号</label>
+          <div class="form-group">
+            <label for="email">邮箱</label>
             <IInput
-              type="text"
-              id="username"
-              v-model="username"
-              placeholder="请输入账号"
+              type="email"
+              id="email"
+              v-model="email"
+              placeholder="请输入邮箱"
               required
             />
           </div>
@@ -29,8 +28,12 @@
           <InteractiveHoverButton
             text="登录"
             class="login-btn"
-            @click="handleLogin"
-          /> -->
+            @click="handleEmailLogin"
+            :disabled="isLoading"
+          />
+          <div v-if="errorMessage" class="error-message">
+            {{ errorMessage }}
+          </div>
         </form>
       </div>
       <div class="login-right">
@@ -66,21 +69,61 @@ import IInput from '@/components/inspira/IInput.vue'
 import InteractiveHoverButton from '@/components/inspira/InteractiveHoverButton.vue'
 
 const router = useRouter()
-// 暂时注释账户密码登录相关变量和函数
-// const username = ref('')
-// const password = ref('')
 
-// const handleLogin = () => {
-//   // 处理登录逻辑
-//   console.log('用户名:', username.value)
-//   console.log('密码:', password.value)
-//   // 这里可以添加实际的登录API调用
-// }
+// 邮箱登录相关变量
+const email = ref('')
+const password = ref('')
+const isLoading = ref(false)
+const errorMessage = ref('')
+
+// 处理邮箱登录
+const handleEmailLogin = async () => {
+  const redirectUrl = `${window.location.origin}/profile`
+  const redirectResult = await authAPI.setLoginRedirect(redirectUrl)
+  if (!redirectResult.success) {
+    errorMessage.value = redirectResult.error || '设置重定向URL失败'
+    return
+  }
+
+  if (isLoading.value) return
+  
+  // 基本验证
+  if (!email.value || !password.value) {
+    errorMessage.value = '请填写完整的邮箱和密码'
+    return
+  }
+  
+  // 邮箱格式验证
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(email.value)) {
+    errorMessage.value = '请输入有效的邮箱地址'
+    return
+  }
+  
+  isLoading.value = true
+  errorMessage.value = ''
+  
+  try {
+    const result = await authAPI.loginWithEmail(email.value, password.value)
+    
+    if (result.success) {
+      // 登录成功，重定向到首页或之前的页面
+      router.push('/')
+    } else {
+      errorMessage.value = result.error || '登录失败，请检查邮箱和密码'
+    }
+  } catch (error) {
+    console.error('邮箱登录时出错:', error)
+    errorMessage.value = '网络错误，请稍后重试'
+  } finally {
+    isLoading.value = false
+  }
+}
 
 const handleQQLogin = async () => {
   try {
     // 设置登录成功后的重定向地址为首页
-    const redirectUrl = `${window.location.origin}/profile`
+    const redirectUrl = `${window.location.origin}/bind`
     const result = await authAPI.setLoginRedirect(redirectUrl)
     
     if (result.success) {
@@ -219,6 +262,23 @@ const handleWXLogin = () => {
 
 .login-btn:active {
   transform: translateY(0) !important;
+}
+
+.login-btn:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+.error-message {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #fee;
+  border: 1px solid #fcc;
+  border-radius: 8px;
+  color: #c33;
+  font-size: 0.9rem;
+  text-align: center;
 }
 
 .login-right {
