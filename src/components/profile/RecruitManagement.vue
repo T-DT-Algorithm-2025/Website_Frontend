@@ -1,13 +1,5 @@
 <template>
-  <div class="content-section">
-    <!-- 招聘管理列表视图 -->
-    <div class="recruit-management-header">
-      <h2 class="section-title">招聘管理</h2>
-      <button class="add-recruit-btn" @click="handleAddNew">
-        <span class="btn-icon">➕</span>
-        新增招聘批次
-      </button>
-    </div>
+  <div class="recruit-list-container">
     
     <div v-if="loading" class="loading-state">
       <div class="loading-spinner"></div>
@@ -104,11 +96,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['add-new', 'view-detail', 'edit', 'delete'])
-
-const handleAddNew = () => {
-  emit('add-new')
-}
+const emit = defineEmits(['view-detail', 'edit', 'delete'])
 
 const viewRecruitDetail = (recruit) => {
   emit('view-detail', recruit)
@@ -157,52 +145,14 @@ const formatDate = (date) => {
 </script>
 
 <style scoped>
-.content-section {
+.recruit-list-container {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
   min-height: 0;
+  overflow: hidden;
 }
 
-.section-title {
-  font-size: 2rem;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid #f8b400;
-  flex-shrink: 0;
-}
-
-.recruit-management-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  flex-shrink: 0;
-}
-
-.add-recruit-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-}
-
-.add-recruit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
-}
 
 .loading-state {
   display: flex;
@@ -263,6 +213,7 @@ const formatDate = (date) => {
   flex: 1;
   overflow-y: auto;
   padding-right: 0.5rem;
+  min-height: 0;
 }
 
 .recruit-management-card {
@@ -272,6 +223,8 @@ const formatDate = (date) => {
   overflow: hidden;
   transition: all 0.3s ease;
   border-left: 4px solid #28a745;
+  flex-shrink: 0;
+  min-height: 200px;
 }
 
 .recruit-management-card:hover {
@@ -467,13 +420,7 @@ const formatDate = (date) => {
 
 @media (max-width: 1024px) {
   .recruit-management-list {
-    overflow-y: visible;
-  }
-  
-  .recruit-management-header {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
+    overflow-y: auto;
   }
   
   .card-content {

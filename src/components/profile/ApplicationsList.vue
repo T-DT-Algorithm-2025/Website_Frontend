@@ -1,5 +1,5 @@
 <template>
-  <div class="content-section">
+  <div class="applications-list-container">
     <!-- 招聘批次列表视图 -->
     <div class="applications-header">
       <h2 class="section-title">招聘批次</h2>
@@ -153,12 +153,12 @@ const formatDate = (date) => {
 </script>
 
 <style scoped>
-.content-section {
+.applications-list-container {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
   min-height: 0;
+  overflow: hidden;
 }
 
 .section-title {
@@ -266,6 +266,7 @@ const formatDate = (date) => {
   flex: 1;
   overflow-y: auto;
   padding-right: 0.5rem;
+  min-height: 0;
 }
 
 .recruit-card {
@@ -275,6 +276,8 @@ const formatDate = (date) => {
   overflow: hidden;
   transition: all 0.3s ease;
   border-left: 4px solid #f8b400;
+  flex-shrink: 0;
+  min-height: 180px;
 }
 
 .recruit-card:hover {
@@ -447,7 +450,7 @@ const formatDate = (date) => {
 
 @media (max-width: 1024px) {
   .recruit-list {
-    overflow-y: visible;
+    overflow-y: auto;
   }
   
   .applications-header {

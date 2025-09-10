@@ -58,7 +58,8 @@ export const authAPI = {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
+        credentials: 'include' // 包含cookies用于认证
       })
       
       const data = await response.json()
@@ -110,7 +111,8 @@ export const authAPI = {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
+        credentials: 'include' // 包含cookies用于认证
       })
       
       const data = await response.json()
@@ -209,7 +211,8 @@ export const authAPI = {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(recruitData)
+        body: JSON.stringify(recruitData),
+        credentials: 'include' // 包含cookies用于认证
       })
       
       const data = await response.json()
@@ -233,7 +236,8 @@ export const authAPI = {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(updateData)
+        body: JSON.stringify(updateData),
+        credentials: 'include' // 包含cookies用于认证
       })
       
       const data = await response.json()
@@ -256,7 +260,8 @@ export const authAPI = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
+        credentials: 'include' // 包含cookies用于认证
       })
       
       const data = await response.json()

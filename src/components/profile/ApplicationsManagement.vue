@@ -42,6 +42,15 @@
       @back="backToMySubmissions"
       @download="downloadAttachment"
     />
+    
+    <UserRecruitDetail
+      v-else-if="currentView === 'recruit-detail'"
+      :recruitData="viewingRecruitDetail"
+      :loading="recruitDetailLoading"
+      @close="backToRecruitList"
+      @apply="applyToRecruitFromDetail"
+      @view-submissions="viewMySubmissionsFromDetail"
+    />
   </div>
 </template>
 
@@ -52,6 +61,7 @@ import ApplicationsList from './ApplicationsList.vue'
 import ApplicationForm from './ApplicationForm.vue'
 import MySubmissions from './MySubmissions.vue'
 import SubmissionDetail from './SubmissionDetail.vue'
+import UserRecruitDetail from './UserRecruitDetail.vue'
 
 const props = defineProps({
   userInfo: {
@@ -63,13 +73,15 @@ const props = defineProps({
 const emit = defineEmits(['refresh-recruit-list'])
 
 // 当前视图状态
-const currentView = ref('list') // 'list' | 'form' | 'my-submissions' | 'submission-detail'
+const currentView = ref('list') // 'list' | 'form' | 'my-submissions' | 'submission-detail' | 'recruit-detail'
 
 // 招聘批次相关状态
 const recruitList = ref([])
 const loading = ref(false)
 const showOnlyAvailable = ref(false)
 const selectedRecruit = ref(null)
+const viewingRecruitDetail = ref(null)
+const recruitDetailLoading = ref(false)
 const positions = ref([])
 const secondStagePositions = ref([])
 
@@ -127,25 +139,24 @@ const toggleView = () => {
 
 // 查看招聘详情
 const viewRecruitDetail = async (recruit) => {
+  recruitDetailLoading.value = true
+  currentView.value = 'recruit-detail'
+  viewingRecruitDetail.value = null
+  
   try {
     const result = await authAPI.getRecruitInfo(recruit.recruit_id)
     if (result.success) {
-      const details = [
-        `招聘名称：${result.data.name}`,
-        `批次ID：${result.data.recruit_id}`,
-        `开始时间：${formatDate(result.data.start_time)}`,
-        `结束时间：${formatDate(result.data.end_time)}`,
-        `状态：${getRecruitStatusText(result.data)}`,
-        `描述：${result.data.description || '暂无描述'}`
-      ].join('\n')
-      
-      alert(`招聘详情：\n\n${details}`)
+      viewingRecruitDetail.value = result.data
     } else {
       alert('获取招聘详情失败：' + result.error)
+      currentView.value = 'list'
     }
   } catch (error) {
     console.error('获取招聘详情失败:', error)
     alert('获取招聘详情失败，请稍后重试')
+    currentView.value = 'list'
+  } finally {
+    recruitDetailLoading.value = false
   }
 }
 
@@ -256,6 +267,26 @@ const backToMySubmissions = () => {
   currentView.value = 'my-submissions'
   selectedSubmission.value = null
   submissionDetail.value = null
+}
+
+// 从招聘详情页返回招聘列表
+const backToRecruitList = () => {
+  currentView.value = 'list'
+  viewingRecruitDetail.value = null
+  recruitDetailLoading.value = false
+}
+
+// 从招聘详情页跳转到申请页面
+const applyToRecruitFromDetail = (recruit) => {
+  selectedRecruit.value = recruit
+  currentView.value = 'form'
+}
+
+// 从招聘详情页跳转到我的投递
+const viewMySubmissionsFromDetail = async (recruit) => {
+  selectedRecruit.value = recruit
+  currentView.value = 'my-submissions'
+  await fetchUserSubmissions(recruit.recruit_id)
 }
 
 // 处理申请提交
@@ -381,7 +412,7 @@ defineExpose({
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
   min-height: 0;
+  height: 100%;
 }
 </style>

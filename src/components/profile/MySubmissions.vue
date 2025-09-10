@@ -1,5 +1,5 @@
 <template>
-  <div class="content-section">
+  <div class="my-submissions-container">
     <div class="form-header">
       <h2 class="section-title">
         我的投递 - {{ selectedRecruit?.name || '招聘批次' }}
@@ -131,12 +131,12 @@ const formatDate = (date) => {
 </script>
 
 <style scoped>
-.content-section {
+.my-submissions-container {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
   min-height: 0;
+  overflow: hidden;
 }
 
 .section-title {
@@ -251,6 +251,7 @@ const formatDate = (date) => {
   flex: 1;
   overflow-y: auto;
   padding-right: 0.5rem;
+  min-height: 0;
 }
 
 .submission-card {
@@ -260,6 +261,8 @@ const formatDate = (date) => {
   overflow: hidden;
   transition: all 0.3s ease;
   border-left: 4px solid #3498db;
+  flex-shrink: 0;
+  min-height: 160px;
 }
 
 .submission-card:hover {
@@ -399,7 +402,7 @@ const formatDate = (date) => {
 
 @media (max-width: 1024px) {
   .submissions-list {
-    overflow-y: visible;
+    overflow-y: auto;
   }
   
   .form-header {
