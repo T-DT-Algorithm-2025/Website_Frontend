@@ -102,17 +102,60 @@
         </div>
       </div>
 
+      <!-- 正面照 -->
+      <div class="detail-section">
+        <h3 class="section-subtitle">正面照</h3>
+        <div class="photo-section">
+          <div v-if="loadingPhoto" class="photo-loading">
+            <div class="loading-spinner"></div>
+            <p>加载照片中...</p>
+          </div>
+          <div v-else-if="photoError" class="photo-error">
+            <span class="error-icon">❌</span>
+            <p>{{ photoError }}</p>
+            <button class="action-btn retry-btn" @click="loadHeadImg">
+              重新加载
+            </button>
+          </div>
+          <div v-else-if="headImgUrl" class="photo-container">
+            <img :src="headImgUrl" alt="正面照" class="head-img" @error="handleImageError" />
+            <div class="photo-actions">
+              <button class="action-btn view-full-btn" @click="viewFullImage">
+                查看大图
+              </button>
+            </div>
+          </div>
+          <div v-else class="photo-placeholder">
+            <span class="placeholder-icon">📷</span>
+            <p>暂无正面照</p>
+          </div>
+        </div>
+      </div>
+
       <!-- 附加文件 -->
-      <div v-if="submissionDetail.info.additional_file_path" class="detail-section">
+      <div class="detail-section">
         <h3 class="section-subtitle">附加文件</h3>
         <div class="file-section">
-          <button
-            class="action-btn download-btn"
-            @click="handleDownload"
-            :disabled="downloadingFile"
-          >
-            {{ downloadingFile ? '下载中...' : '下载文件' }}
-          </button>
+          <div v-if="submissionDetail.info.additional_file_path" class="file-container">
+            <div class="file-info">
+              <span class="file-icon">📄</span>
+              <div class="file-details">
+                <p class="file-name">附加文件</p>
+                <p class="file-description">点击下载查看完整文件</p>
+              </div>
+            </div>
+            <button
+              class="action-btn download-btn"
+              @click="handleDownload"
+              :disabled="downloadingFile"
+            >
+              {{ downloadingFile ? '下载中...' : '📥 下载文件' }}
+            </button>
+          </div>
+          <div v-else class="file-placeholder">
+            <span class="placeholder-icon">📄</span>
+            <p>未上传附加文件</p>
+          </div>
         </div>
       </div>
     </div>
@@ -120,7 +163,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
+import { authAPI } from '@/api/auth.js'
 
 const props = defineProps({
   submissionDetail: {
@@ -147,6 +191,11 @@ const props = defineProps({
 
 const emit = defineEmits(['back', 'download'])
 
+// 正面照相关状态
+const headImgUrl = ref(null)
+const loadingPhoto = ref(false)
+const photoError = ref(null)
+
 const handleBack = () => {
   emit('back')
 }
@@ -154,6 +203,62 @@ const handleBack = () => {
 const handleDownload = () => {
   emit('download', props.selectedSubmission.submit_id)
 }
+
+// 加载正面照
+const loadHeadImg = async () => {
+  if (!props.selectedSubmission?.submit_id) return
+  
+  loadingPhoto.value = true
+  photoError.value = null
+  
+  try {
+    const result = await authAPI.getResumeHeadImg(props.selectedSubmission.submit_id)
+    if (result.success) {
+      // 如果之前有图片URL，释放它
+      if (headImgUrl.value) {
+        URL.revokeObjectURL(headImgUrl.value)
+      }
+      headImgUrl.value = result.imageUrl
+    } else {
+      photoError.value = result.error || '加载正面照失败'
+    }
+  } catch (error) {
+    console.error('加载正面照失败:', error)
+    photoError.value = '网络错误，请稍后重试'
+  } finally {
+    loadingPhoto.value = false
+  }
+}
+
+// 处理图片加载错误
+const handleImageError = () => {
+  photoError.value = '图片加载失败'
+  if (headImgUrl.value) {
+    URL.revokeObjectURL(headImgUrl.value)
+    headImgUrl.value = null
+  }
+}
+
+// 查看大图
+const viewFullImage = () => {
+  if (headImgUrl.value) {
+    window.open(headImgUrl.value, '_blank')
+  }
+}
+
+// 监听投递详情变化，自动加载正面照
+watch(() => props.selectedSubmission, (newSubmission) => {
+  if (newSubmission?.submit_id) {
+    loadHeadImg()
+  }
+}, { immediate: true })
+
+// 组件销毁时释放图片URL
+onUnmounted(() => {
+  if (headImgUrl.value) {
+    URL.revokeObjectURL(headImgUrl.value)
+  }
+})
 
 // 获取投递状态样式类
 const getSubmissionStatusClass = (status) => {
@@ -306,8 +411,135 @@ const formatDate = (date) => {
   color: #333;
 }
 
+/* 正面照相关样式 */
+.photo-section {
+  margin-top: 1rem;
+}
+
+.photo-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.photo-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #666;
+  text-align: center;
+}
+
+.error-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.photo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.head-img {
+  max-width: 300px;
+  max-height: 400px;
+  width: auto;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid #f8b400;
+}
+
+.head-img:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.photo-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.photo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #999;
+  text-align: center;
+}
+
+.placeholder-icon {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  color: #ddd;
+}
+
+/* 文件相关样式 */
 .file-section {
   margin-top: 1rem;
+}
+
+.file-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e1e5e9;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.file-icon {
+  font-size: 2rem;
+  color: #3498db;
+}
+
+.file-details {
+  flex: 1;
+}
+
+.file-name {
+  font-weight: 500;
+  color: #333;
+  margin: 0 0 0.25rem 0;
+}
+
+.file-description {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0;
+}
+
+.file-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #999;
+  text-align: center;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e1e5e9;
 }
 
 .action-btn {
@@ -336,6 +568,29 @@ const formatDate = (date) => {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none !important;
+}
+
+.view-full-btn {
+  background: rgba(248, 180, 0, 0.1);
+  color: #f8b400;
+  border: 1px solid rgba(248, 180, 0, 0.3);
+}
+
+.view-full-btn:hover:not(:disabled) {
+  background: rgba(248, 180, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+.retry-btn {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  margin-top: 0.5rem;
+}
+
+.retry-btn:hover:not(:disabled) {
+  background: rgba(220, 53, 69, 0.2);
+  transform: translateY(-1px);
 }
 
 .status-pending {
@@ -410,6 +665,26 @@ const formatDate = (date) => {
 @media (max-width: 768px) {
   .section-title {
     font-size: 1.5rem;
+  }
+  
+  .head-img {
+    max-width: 250px;
+    max-height: 300px;
+  }
+  
+  .file-container {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+  
+  .photo-actions {
+    justify-content: center;
+  }
+  
+  .action-btn {
+    width: 100%;
+    text-align: center;
   }
 }
 </style>

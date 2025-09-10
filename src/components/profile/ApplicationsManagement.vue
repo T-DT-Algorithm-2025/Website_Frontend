@@ -32,6 +32,7 @@
       @back="backToRecruitListFromSubmissions"
       @apply-now="applyToRecruit"
       @view-submission-detail="viewSubmissionDetail"
+      @edit-submission="editSubmission"
     />
     
     <SubmissionDetail
@@ -53,6 +54,18 @@
       @apply="applyToRecruitFromDetail"
       @view-submissions="viewMySubmissionsFromDetail"
     />
+    
+    <EditResumeForm
+      v-else-if="currentView === 'edit-resume'"
+      :selectedRecruit="selectedRecruit"
+      :submissionDetail="submissionDetail"
+      :selectedSubmission="selectedSubmission"
+      :positions="positions"
+      :secondStagePositions="secondStagePositions"
+      :isSubmitting="isEditSubmitting"
+      @submit="handleEditSubmit"
+      @back="backToMySubmissions"
+    />
   </div>
 </template>
 
@@ -64,6 +77,7 @@ import ApplicationForm from './ApplicationForm.vue'
 import MySubmissions from './MySubmissions.vue'
 import SubmissionDetail from './SubmissionDetail.vue'
 import UserRecruitDetail from './UserRecruitDetail.vue'
+import EditResumeForm from './EditResumeForm.vue'
 
 const props = defineProps({
   userInfo: {
@@ -75,7 +89,7 @@ const props = defineProps({
 const emit = defineEmits(['refresh-recruit-list', 'user-info-updated'])
 
 // 当前视图状态
-const currentView = ref('list') // 'list' | 'form' | 'my-submissions' | 'submission-detail' | 'recruit-detail'
+const currentView = ref('list') // 'list' | 'form' | 'my-submissions' | 'submission-detail' | 'recruit-detail' | 'edit-resume'
 
 // 招聘批次相关状态
 const recruitList = ref([])
@@ -98,6 +112,9 @@ const downloadingFile = ref(false)
 // 申请表单相关状态
 const isApplicationSubmitting = ref(false)
 const applicationFormRef = ref(null)
+
+// 编辑简历相关状态
+const isEditSubmitting = ref(false)
 
 // 获取招聘批次列表
 const fetchRecruitList = async () => {
@@ -217,6 +234,96 @@ const fetchSubmissionDetail = async (submitId) => {
     alert('获取投递详情失败，请稍后重试')
   } finally {
     submissionDetailLoading.value = false
+  }
+}
+
+// 编辑投递
+const editSubmission = async (submission) => {
+  selectedSubmission.value = submission
+  currentView.value = 'edit-resume'
+  await fetchSubmissionDetail(submission.submit_id)
+}
+
+// 处理编辑提交
+const handleEditSubmit = async (editForm) => {
+  // 验证必填字段
+  if (!editForm.first_choice) {
+    alert('请选择第一志愿')
+    return
+  }
+  
+  if (!editForm.self_intro) {
+    alert('请填写自我介绍')
+    return
+  }
+  
+  if (!editForm.skills) {
+    alert('请填写技能')
+    return
+  }
+  
+  if (!editForm.projects) {
+    alert('请填写项目经历')
+    return
+  }
+  
+  if (!editForm.awards) {
+    alert('请填写获奖经历')
+    return
+  }
+  
+  isEditSubmitting.value = true
+  try {
+    // 创建FormData对象
+    const formData = new FormData()
+    
+    // 添加表单数据
+    formData.append('first_choice', editForm.first_choice)
+    if (editForm.second_choice) {
+      formData.append('second_choice', editForm.second_choice)
+    }
+    formData.append('self_intro', editForm.self_intro)
+    formData.append('skills', editForm.skills)
+    formData.append('projects', editForm.projects)
+    formData.append('awards', editForm.awards)
+    
+    if (editForm.grade_point) {
+      formData.append('grade_point', editForm.grade_point)
+    }
+    if (editForm.grade_rank) {
+      formData.append('grade_rank', editForm.grade_rank)
+    }
+    
+    // 添加文件变更控制字段
+    formData.append('real_head_img_change', editForm.real_head_img_change)
+    formData.append('additional_file_change', editForm.additional_file_change)
+    
+    // 如果选择更换正面照
+    if (editForm.real_head_img_change && editForm.real_head_img) {
+      formData.append('real_head_img', editForm.real_head_img)
+    }
+    
+    // 如果选择更换附加文件
+    if (editForm.additional_file_change && editForm.additional_file) {
+      formData.append('additional_file', editForm.additional_file)
+    }
+    
+    // 调用后端API更新简历
+    const result = await authAPI.updateResume(selectedSubmission.value.submit_id, formData)
+    
+    if (result.success) {
+      alert('简历更新成功！')
+      // 返回到投递列表并刷新数据
+      await fetchUserSubmissions(selectedRecruit.value.recruit_id)
+      currentView.value = 'my-submissions'
+    } else {
+      alert('更新失败：' + result.error)
+    }
+  } catch (error) {
+    console.error('更新简历失败:', error)
+    alert('更新失败，请稍后重试')
+  } finally {
+    isEditSubmitting.value = false
   }
 }
 

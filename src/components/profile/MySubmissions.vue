@@ -64,6 +64,12 @@
 
           <div class="card-actions">
             <button
+              class="action-btn edit-btn"
+              @click="editSubmission(submission)"
+            >
+              修改简历
+            </button>
+            <button
               class="action-btn view-detail-btn"
               @click="viewSubmissionDetail(submission)"
             >
@@ -94,7 +100,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['back', 'apply-now', 'view-submission-detail'])
+const emit = defineEmits(['back', 'apply-now', 'view-submission-detail', 'edit-submission'])
 
 const handleBack = () => {
   emit('back')
@@ -106,6 +112,10 @@ const handleApplyNow = () => {
 
 const viewSubmissionDetail = (submission) => {
   emit('view-submission-detail', submission)
+}
+
+const editSubmission = (submission) => {
+  emit('edit-submission', submission)
 }
 
 // 获取投递状态样式类
@@ -367,6 +377,17 @@ const formatDate = (date) => {
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
+}
+
+.edit-btn {
+  background: rgba(248, 180, 0, 0.1);
+  color: #f8b400;
+  border: 1px solid rgba(248, 180, 0, 0.3);
+}
+
+.edit-btn:hover:not(:disabled) {
+  background: rgba(248, 180, 0, 0.2);
+  transform: translateY(-1px);
 }
 
 .view-detail-btn {

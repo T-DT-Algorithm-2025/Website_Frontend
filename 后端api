@@ -1,0 +1,666 @@
+后端 API 文档
+基础URL前缀: /api
+1. 认证与登录 (Authentication)
+1.1 QQ登录回调
+Endpoint: /api/oauth/qq/callback
+Method: GET
+描述: 处理来自QQ的OAuth2.0登录回调。此端点由QQ服务器重定向访问，不应由前端直接调用。成功后会设置用户session并重定向到之前的页面。
+查询参数:
+code (string, required): QQ返回的授权码。
+state (string, required): QQ返回的状态码。
+响应:
+302 Found: 重定向到登录前的页面或主页。
+1.2 发送邮箱验证码
+Endpoint: /api/mail/verify/send
+Method: POST
+描述: 向指定邮箱发送用于注册或验证的六位十六进制验证码。验证码10分钟内有效，同一邮箱60秒内只能发送一次。
+请求体 (JSON):
+{
+  "mail": "user@example.com"
+}
+
+
+成功响应 (200 OK):
+{
+  "success": true,
+  "message": "验证邮件已发送"
+}
+
+
+错误响应:
+400 Bad Request: {"success": false, "error": "未提供邮箱地址"}
+409 Conflict: {"success": false, "error": "该邮箱已被注册"}
+429 Too Many Requests: {"success": false, "error": "请勿频繁发送验证码，60秒后再试"}
+500 Internal Server Error: {"success": false, "error": "发送邮件失败"}
+1.3 邮箱注册
+Endpoint: /api/login/mail/register
+Method: POST
+描述: 使用邮箱、密码和验证码完成新用户注册。成功后会自动登录并设置session。
+请求体 (JSON):
+{
+  "mail": "user@example.com",
+  "pwd": "your_password",
+  "verification_code": "abcdef"
+}
+
+
+成功响应: 302 Found 重定向。
+错误响应:
+400 Bad Request: {"success": false, "error": "未提供完整的注册信息"} or {"success": false, "error": "验证码错误"}
+409 Conflict: {"success": false, "error": "该邮箱已被注册"}
+410 Gone: {"success": false, "error": "验证码已过期，请重新获取"}
+1.4 邮箱登录
+Endpoint: /api/login/mail
+Method: POST
+描述: 使用邮箱和密码进行登录。成功后会自动登录并设置session。
+请求体 (JSON):
+{
+  "mail": "user@example.com",
+  "pwd": "your_password"
+}
+
+
+成功响应: 302 Found 重定向。
+错误响应 (401 Unauthorized):
+{
+  "success": false,
+  "error": "邮箱或密码错误"
+}
+
+
+1.5 登出
+Endpoint: /api/logout
+Method: POST, GET
+描述: 清除当前用户的session，实现登出。
+成功响应 (200 OK):
+{
+  "success": true,
+  "message": "用户已登出"
+}
+
+
+错误响应 (401 Unauthorized):
+{
+  "success": false,
+  "message": "用户未登录"
+}
+
+
+1.6 设置登录绑定
+Endpoint: /api/login/bundle/set
+Method: POST
+描述: 为已登录的用户设置账户绑定模式。当用户希望将一个新的登录方式（如QQ或邮箱）关联到现有账户时调用此接口。支持的值为 'qq' 和 'mail'。
+请求体 (JSON):
+{
+  "bundle_name": "qq"
+}
+
+
+成功响应 (200 OK):
+{
+  "success": true
+}
+
+
+错误响应 (400 Bad Request):
+{
+  "success": false,
+  "error": "未提供绑定信息"
+}
+
+
+2. 用户信息 (User Info)
+注意: 以下所有接口都需要用户登录。
+2.1 获取当前用户信息
+Endpoint: /api/user/info/get
+Method: GET
+描述: 获取当前登录用户的详细信息。
+成功响应 (200 OK):
+{
+  "success": true,
+  "data": {
+    "uid": "...",
+    "nickname": "...",
+    "gender": "...",
+    "realname": "...",
+    "student_id": "...",
+    "department": "...",
+    "major": "...",
+    "grade": "...",
+    "rank": "...",
+    "phone_number": "...",
+    "is_verified": true,
+    "permission": false
+  }
+}
+
+
+错误响应:
+401 Unauthorized: {"success": false, "error": "用户未登录"}
+404 Not Found: {"success": false, "error": "未找到用户信息"}
+2.2 更新当前用户信息
+Endpoint: /api/user/info/update
+Method: POST
+描述: 更新当前登录用户的信息。可更新字段包括: nickname, gender, realname, student_id, department, major, grade, rank, phone_number。
+请求体 (JSON):
+{
+  "realname": "张三",
+  "student_id": "2022000001",
+  "phone_number": "13800138000"
+}
+
+
+成功响应 (200 OK):
+{
+  "success": true,
+  "message": "用户信息更新成功"
+}
+
+
+错误响应: 400, 401, 500
+2.3 获取用户头像
+Endpoint: /api/user/avatar/get
+Method: GET
+描述: 获取当前登录用户的头像文件。如果用户未上传头像，则返回默认头像。
+成功响应: 200 OK (返回图片文件流)
+错误响应:
+401 Unauthorized: {"success": false, "error": "用户未登录"}
+404 Not Found: {"success": false, "error": "默认头像未找到"}
+2.4 更新用户头像
+Endpoint: /api/user/avatar/update
+Method: POST
+描述: 更新当前登录用户的头像。
+请求体 (form-data):
+avatar: (file, required) 图片文件 (png, jpg, jpeg, gif)。
+成功响应 (200 OK):
+{
+  "success": true,
+  "message": "头像更新成功",
+  "path": "avatars/your-uid.jpg"
+}
+
+
+错误响应: 400, 401, 500
+3. 招聘信息 (Recruitment)
+3.1 获取招聘列表
+Endpoint: /api/recruit/list
+Method: GET
+描述: 获取所有招聘信息的列表。普通用户只能看到已激活的招聘。管理员可以看到所有招聘。
+查询参数:
+only_available (boolean, optional): 若为true，则只返回当前时间范围内可申请的招聘。默认为 false。
+成功响应 (200 OK):
+{
+  "success": true,
+  "data": [
+    {
+      "recruit_id": "...",
+      "name": "2025秋季招新",
+      "start_time": "2025-09-01 10:00:00",
+      "end_time": "2025-09-30 23:59:59",
+      "is_active": true,
+      "available": true,
+      "is_applyed": false
+    }
+  ]
+}
+
+
+错误响应 (404 Not Found): {"success": false, "error": "未找到招聘信息"}
+3.2 获取招聘详情
+Endpoint: /api/recruit/info/<recruit_id>
+Method: GET
+描述: 获取指定recruit_id的招聘详细信息。
+成功响应 (200 OK):
+{
+  "success": true,
+  "data": {
+    "recruit_id": "...",
+    "name": "2025秋季招新",
+    "start_time": "2025-09-01 10:00:00",
+    "end_time": "2025-09-30 23:59:59",
+    "description": "这是招聘的详细描述...",
+    "is_active": true,
+    "available": true,
+    "is_applyed": false
+  }
+}
+
+
+错误响应:
+403 Forbidden: {"success": false, "error": "该招聘信息不可见"}
+404 Not Found: {"success": false, "error": "未找到该招聘信息"}
+3.3 获取可用职位列表
+Endpoint: /api/recruit/positions
+Method: GET
+描述: 获取当前可供申请的职位列表（第一志愿和第二志愿）。
+成功响应 (200 OK):
+{
+  "success": true,
+  "positions": ["算法组", "电控组", "机械组", "运营组"],
+  "second_stage_positions": ["运营组"]
+}
+
+
+4. 简历管理 (Resume)
+注意: 以下所有接口都需要用户登录。
+4.1 提交简历申请
+Endpoint: /api/recruit/apply
+Method: POST
+描述: 为某个招聘提交一份简历申请。
+请求体 (form-data):
+recruit_id (string, required): 招聘ID。
+first_choice (string, required): 第一志愿。
+second_choice (string, optional): 第二志愿。
+self_intro (string, required): 自我介绍。
+skills (string, required): 技能。
+projects (string, required): 项目经历。
+awards (string, required): 获奖经历。
+grade_point (string, optional): 绩点。
+grade_rank (string, optional): 排名。
+real_head_img (file, required): 正面照 (png, jpg, jpeg)。
+additional_file (file, optional): 附加文件 (pdf, doc, docx, etc.)。
+成功响应 (200 OK):
+{
+  "success": true,
+  "submit_id": "new-submit-id"
+}
+
+
+错误响应: 400, 401, 409
+4.2 获取用户简历列表
+Endpoint: /api/resume/list
+Method: GET
+描述: 获取当前登录用户的所有简历提交记录。
+查询参数:
+recruit_id (string, optional): 如果提供，则只返回该招聘下的简历。
+成功响应 (200 OK):
+{
+  "success": true,
+  "submissions": [
+    {
+      "submit_id": "...",
+      "recruit_id": "...",
+      "submit_time": "2025-09-10 20:00:00",
+      "status": 0,
+      "status_name": "未处理"
+    }
+  ]
+}
+
+
+错误响应: 401, 500
+4.3 获取简历详情
+Endpoint: /api/resume/info/<submit_id>
+Method: GET
+描述: 获取指定submit_id的简历详细信息。用户只能查看自己的简历，管理员可以查看所有简历。
+成功响应 (200 OK):
+{
+  "success": true,
+  "submission": {
+      "submit_id": "...",
+      "uid": "...",
+      "recruit_id": "...",
+      "submit_time": "...",
+      "status": 0,
+      "status_name": "未处理"
+  },
+  "info": {
+      "submit_id": "...",
+      "first_choice": "算法组",
+      "second_choice": "运营组",
+      "self_intro": "...",
+      "skills": "...",
+      "projects": "...",
+      "awards": "...",
+      "grade_point": "4.0",
+      "grade_rank": "1/100",
+      "additional_file_path": "uploads/..."
+  }
+}
+
+
+错误响应: 401, 403, 404
+4.4 更新简历
+Endpoint: /api/resume/update/<submit_id>
+Method: POST
+描述: 用户更新自己已提交的简历。
+请求体 (form-data):
+与4.1 提交简历申请类似，但包含额外的控制字段：
+additional_file_change (boolean): 是否要更换附加文件。
+real_head_img_change (boolean): 是否要更换正面照。
+成功响应 (200 OK): {"success": true}
+错误响应: 400, 401, 403, 404
+4.5 删除简历
+Endpoint: /api/resume/delete/<submit_id>
+Method: POST
+描述: 用户删除自己提交的简历（仅限招聘期间），或管理员删除任意简历。
+成功响应 (200 OK): {"success": true}
+错误响应: 401, 403, 404
+4.6 下载附加文件
+Endpoint: /api/resume/download/<submit_id>
+Method: GET
+描述: 下载指定简历的附加文件。
+成功响应: 200 OK (返回文件流)
+错误响应: 401, 403, 404, 500
+4.7 查看正面照
+Endpoint: /api/resume/real_head_img/<submit_id>
+Method: GET
+描述: 查看指定简历的正面照。
+成功响应: 200 OK (返回图片文件流)
+错误响应: 401, 403, 404, 500
+5. 面试管理 (Interview)
+注意: 以下所有接口都需要用户登录。
+5.1 检查某招聘是否可预约面试
+Endpoint: /api/interview/available/<recruit_id>
+Method: GET
+描述: 检查用户对于指定的招聘是否满足预约面试的条件（简历已通过且在预约时间段内）。
+成功响应 (200 OK):
+{
+  "success": true,
+  "data": {
+    "available": true,
+    "start_time": "2025-10-01 09:00:00",
+    "end_time": "2025-10-07 18:00:00"
+  }
+}
+
+
+错误响应: 401, 500
+5.2 获取可预约的面试时间段
+Endpoint: /api/interview/schedule/available/<submit_id>
+Method: GET
+描述: 获取指定投递（submit_id）所有可用的面试时间段。
+成功响应 (200 OK):
+{
+  "success": true,
+  "data": [
+    {
+      "schedule_id": "...",
+      "start_time": "2025-10-02 10:00:00",
+      "end_time": "2025-10-02 10:30:00",
+      "room_name": "算法组面试间A",
+      "location": "活动中心301"
+    }
+  ]
+}
+
+
+错误响应: 401, 403, 404, 500
+5.3 预约面试
+Endpoint: /api/interview/schedule/book
+Method: POST
+描述: 用户为指定的投递预约一个面试时间段。
+请求体 (JSON):
+{
+  "schedule_id": "...",
+  "submit_id": "..."
+}
+
+
+成功响应 (200 OK):
+{
+  "success": true,
+  "message": "面试预约成功",
+  "interview_id": "new-interview-id"
+}
+
+
+错误响应:
+400 Bad Request: {"success": false, "error": "缺少 schedule_id 或 submit_id"}
+403 Forbidden: {"success": false, "error": "该投递不符合面试预约条件"}
+409 Conflict: {"success": false, "error": "该时间段已被预约，请选择其他时间"}
+500 Internal Server Error
+5.4 获取我的面试安排
+Endpoint: /api/interview/my_bookings/<recruit_id>
+Method: GET
+描述: 获取当前用户在某个招聘下的所有已预约面试信息。
+成功响应 (200 OK):
+{
+  "success": true,
+  "data": [
+    {
+      "interview_id": "...",
+      "submit_id": "...",
+      "interview_time": "2025-10-02 10:00:00",
+      "location": "活动中心301",
+      "choice": "算法组"
+    }
+  ]
+}
+
+
+错误响应: 401, 500
+6. 管理员接口 (Admin)
+注意: 以下所有接口都需要管理员权限。
+6.1 用户管理
+6.1.1 获取所有用户列表
+Endpoint: /api/admin/user/list
+Method: GET
+成功响应 (200 OK):
+{
+  "success": true,
+  "data": [
+    {
+      "uid": "...",
+      "name": "张三",
+      "email": "zhangsan@example.com",
+      "registration_time": "2025-09-01 12:00:00"
+    }
+  ]
+}
+
+
+6.1.2 批量删除用户
+Endpoint: /api/admin/user/batch/delete
+Method: POST
+请求体 (JSON):
+{
+  "uids": ["uid1", "uid2"]
+}
+
+
+成功响应 (200 OK): {"success": true, "message": "用户已批量删除"}
+6.1.3 更新用户权限
+Endpoint: /api/admin/user/permissions/update
+Method: POST
+请求体 (JSON):
+{
+  "uid": "target-user-uid",
+  "is_main_leader_admin": false,
+  "is_group_leader_admin": true,
+  "is_member_admin": true
+}
+
+
+成功响应 (200 OK): {"success": true, "message": "用户权限已更新"}
+6.1.4 获取用户权限
+Endpoint: /api/admin/user/permissions/get/<target_uid>
+Method: GET
+成功响应 (200 OK):
+{
+  "success": true,
+  "data": {
+    "uid": "target-user-uid",
+    "is_main_leader_admin": false,
+    "is_group_leader_admin": true,
+    "is_member_admin": true,
+    "is_banned": false,
+    "ban_reason": null
+  }
+}
+
+
+6.1.5 搜索用户
+Endpoint: /api/admin/user/search
+Method: GET
+查询参数:
+query (string, required): 搜索关键词（匹配用户名或邮箱）。
+成功响应: 同 6.1.1
+6.2 招聘管理
+6.2.1 创建招聘
+Endpoint: /api/recruit/create
+Method: POST
+请求体 (JSON):
+{
+  "name": "2025冬季实习生招聘",
+  "start_time": "2025-12-01 10:00:00",
+  "end_time": "2025-12-31 23:59:59",
+  "description": "...",
+  "is_active": true
+}
+
+
+成功响应 (200 OK):
+{
+  "success": true,
+  "message": "招聘信息创建成功",
+  "recruit_id": "new-recruit-id"
+}
+
+
+6.2.2 更新招聘
+Endpoint: /api/recruit/<recruit_id>/update
+Method: POST
+请求体 (JSON): 包含一个或多个要更新的字段，同上。
+成功响应 (200 OK): {"success": true, "message": "招聘信息更新成功"}
+6.2.3 删除招聘
+Endpoint: /api/recruit/<recruit_id>/delete
+Method: POST
+成功响应 (200 OK): {"success": true, "message": "招聘信息删除成功"}
+6.3 简历管理 (管理员)
+6.3.1 获取所有简历列表
+Endpoint: /api/resume/admin/list
+Method: GET
+成功响应 (200 OK):
+{
+  "success": true,
+  "data": [
+    {
+      "submit_id": "...",
+      "uid": "...",
+      "recruit_id": "...",
+      "submit_time": "2025-09-10 20:00:00",
+      "status": 0
+    }
+  ]
+}
+
+
+6.3.2 获取简历状态名称列表
+Endpoint: /api/resume/status_names
+Method: GET
+描述: 获取所有可能的简历状态及其对应的ID。
+成功响应 (200 OK):
+{
+  "success": true,
+  "data": [
+    {"status_id": 0, "status_name": "未处理"},
+    {"status_id": 1, "status_name": "简历通过"},
+    ...
+  ]
+}
+
+
+6.3.3 批量更新简历状态
+Endpoint: /api/resume/admin/batch/update_status
+Method: POST
+请求体 (JSON):
+{
+  "submit_ids": ["submit-id-1", "submit-id-2"],
+  "new_status": 1
+}
+
+
+成功响应 (200 OK): {"success": true, "message": "简历状态批量更新成功"}
+6.3.4 批量删除简历
+Endpoint: /api/resume/admin/batch/delete
+Method: POST
+请求体 (JSON):
+{
+  "submit_ids": ["submit-id-1", "submit-id-2"]
+}
+
+
+成功响应 (200 OK): {"success": true, "message": "简历批量删除成功"}
+6.3.5 添加简历评审意见
+Endpoint: /api/resume/admin/review/add/<submit_id>
+Method: POST
+请求体 (JSON):
+{
+  "comments": "候选人背景优秀",
+  "score": 90,
+  "passed": true
+}
+
+
+成功响应 (200 OK): {"success": true, "message": "简历审核提交成功"}
+6.3.6 获取简历的所有评审意见
+Endpoint: /api/resume/admin/review/get_all/<submit_id>
+Method: GET
+成功响应 (200 OK):
+{
+  "success": true,
+  "data": { ... } // 返回 resume_review 表中的记录
+}
+
+
+6.3.7 删除单条评审意见
+Endpoint: /api/resume/admin/review/delete/<review_id>
+Method: POST
+成功响应 (200 OK): {"success": true, "message": "审核记录删除成功"}
+6.4 面试管理 (管理员)
+6.4.1 设置面试预约时间段
+Endpoint: /api/interview/available/settings/<recruit_id>
+Method: POST
+请求体 (JSON):
+{
+  "book_start_time": "2025-10-01 09:00:00",
+  "book_end_time": "2025-10-07 18:00:00"
+}
+
+
+成功响应 (200 OK): {"success": true, "message": "面试地点预约时间设置成功"}
+6.4.2 添加面试房间
+Endpoint: /api/admin/interview/room/add
+Method: POST
+请求体 (JSON):
+{
+  "recruit_id": "...",
+  "room_name": "算法组面试间A",
+  "location": "活动中心301",
+  "applicable_to_choice": "算法组"
+}
+
+
+成功响应 (200 OK):
+{
+  "success": true,
+  "message": "面试地点添加成功",
+  "room_id": "new-room-id"
+}
+
+
+6.4.3 获取面试房间列表
+Endpoint: /api/admin/interview/room/list/<recruit_id>
+Method: GET
+成功响应 (200 OK): {"success": true, "data": [ ... ]}
+6.4.4 获取招聘下的所有面试列表
+Endpoint: /api/admin/interview/list/<recruit_id>
+Method: GET
+成功响应 (200 OK):
+{
+  "success": true,
+  "data": [
+    {
+      "interview_id": "...",
+      "submit_id": "...",
+      "interviewee_uid": "...",
+      "interviewee_name": "李四",
+      "interview_time": "2025-10-02 10:00:00",
+      "location": "活动中心301",
+      "notes": "..."
+    }
+  ]
+}
+
+

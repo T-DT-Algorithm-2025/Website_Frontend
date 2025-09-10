@@ -5,6 +5,7 @@ import JoinUs from '../views/JoinUs.vue'
 import FAQ from '../views/FAQ.vue'
 import Contact from '../views/Contact.vue'
 import Login from '../views/Login.vue'
+import Register from '../views/Register.vue'
 import Bind from '../views/Bind.vue'
 import Show from '../views/Show.vue'
 import Profile from '../views/Profile.vue'
@@ -38,6 +39,11 @@ const routes: RouteRecordRaw[] = [
     path: '/login',
     name: 'Login',
     component: Login
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: Register
   },
   {
     path: '/bind',

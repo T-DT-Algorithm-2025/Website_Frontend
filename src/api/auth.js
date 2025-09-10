@@ -354,6 +354,48 @@ export const authAPI = {
     }
   },
 
+  // 获取简历正面照
+  async getResumeHeadImg(submitId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/resume/real_head_img/${submitId}`, {
+        method: 'GET'
+      })
+      
+      if (response.ok) {
+        const blob = await response.blob()
+        const imageUrl = URL.createObjectURL(blob)
+        return { success: true, imageUrl }
+      } else {
+        const data = await response.json()
+        return { success: false, error: data.error || '获取正面照失败' }
+      }
+    } catch (error) {
+      console.error('获取正面照时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 更新简历
+  async updateResume(submitId, formData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/resume/update/${submitId}`, {
+        method: 'POST',
+        body: formData // 使用FormData，因为包含文件上传
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data }
+      } else {
+        return { success: false, error: data.error || '更新简历失败' }
+      }
+    } catch (error) {
+      console.error('更新简历时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
   // ========== 绑定相关接口 ==========
 
   // 设置登录绑定模式

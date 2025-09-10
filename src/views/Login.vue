@@ -34,6 +34,11 @@
           <div v-if="errorMessage" class="error-message">
             {{ errorMessage }}
           </div>
+          
+          <!-- 注册链接 -->
+          <div class="register-link">
+            没有账号？<router-link to="/register" class="link">立即注册</router-link>
+          </div>
         </form>
       </div>
       <div class="login-right">
@@ -279,6 +284,23 @@ const handleWXLogin = () => {
   color: #c33;
   font-size: 0.9rem;
   text-align: center;
+}
+
+.register-link {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.register-link .link {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.register-link .link:hover {
+  text-decoration: underline;
 }
 
 .login-right {
