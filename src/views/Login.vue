@@ -5,7 +5,8 @@
       <div class="login-left">
         <form class="login-box" @submit.prevent="handleLogin">
           <div class="login-title">登录</div>
-          <div class="form-group">
+          <!-- 暂时注释账户密码登录功能 -->
+          <!-- <div class="form-group">
             <label for="username">账号</label>
             <IInput
               type="text"
@@ -29,7 +30,7 @@
             text="登录"
             class="login-btn"
             @click="handleLogin"
-          />
+          /> -->
         </form>
       </div>
       <div class="login-right">
@@ -65,20 +66,21 @@ import IInput from '@/components/inspira/IInput.vue'
 import InteractiveHoverButton from '@/components/inspira/InteractiveHoverButton.vue'
 
 const router = useRouter()
-const username = ref('')
-const password = ref('')
+// 暂时注释账户密码登录相关变量和函数
+// const username = ref('')
+// const password = ref('')
 
-const handleLogin = () => {
-  // 处理登录逻辑
-  console.log('用户名:', username.value)
-  console.log('密码:', password.value)
-  // 这里可以添加实际的登录API调用
-}
+// const handleLogin = () => {
+//   // 处理登录逻辑
+//   console.log('用户名:', username.value)
+//   console.log('密码:', password.value)
+//   // 这里可以添加实际的登录API调用
+// }
 
 const handleQQLogin = async () => {
   try {
     // 设置登录成功后的重定向地址为首页
-    const redirectUrl = `${window.location.origin}/`
+    const redirectUrl = `${window.location.origin}/profile`
     const result = await authAPI.setLoginRedirect(redirectUrl)
     
     if (result.success) {

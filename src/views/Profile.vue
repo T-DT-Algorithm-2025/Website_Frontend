@@ -38,6 +38,7 @@
           v-else-if="activeTab === 'applications'"
           :userInfo="userInfo"
           @refresh-recruit-list="refreshRecruitList"
+          @user-info-updated="fetchUserInfo"
         />
 
       <!-- 招聘管理界面（仅管理员可见） -->

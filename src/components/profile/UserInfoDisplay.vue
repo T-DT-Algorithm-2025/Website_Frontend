@@ -34,6 +34,10 @@
         <label>学历</label>
         <span>{{ userInfo?.rank || '未设置' }}</span>
       </div>
+      <div class="info-item">
+        <label>手机号码</label>
+        <span>{{ userInfo?.phone_number || '未设置' }}</span>
+      </div>
     </div>
   </div>
 </template>

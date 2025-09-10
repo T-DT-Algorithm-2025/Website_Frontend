@@ -18,8 +18,10 @@
       :positions="positions"
       :secondStagePositions="secondStagePositions"
       :isSubmitting="isApplicationSubmitting"
+      :userInfo="userInfo"
       @submit="handleApplicationSubmit"
       @back="backToList"
+      @user-info-updated="handleUserInfoUpdated"
     />
     
     <MySubmissions
@@ -70,7 +72,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['refresh-recruit-list'])
+const emit = defineEmits(['refresh-recruit-list', 'user-info-updated'])
 
 // 当前视图状态
 const currentView = ref('list') // 'list' | 'form' | 'my-submissions' | 'submission-detail' | 'recruit-detail'
@@ -287,6 +289,12 @@ const viewMySubmissionsFromDetail = async (recruit) => {
   selectedRecruit.value = recruit
   currentView.value = 'my-submissions'
   await fetchUserSubmissions(recruit.recruit_id)
+}
+
+// 处理用户信息更新
+const handleUserInfoUpdated = () => {
+  // 通知父组件刷新用户信息
+  emit('user-info-updated')
 }
 
 // 处理申请提交
