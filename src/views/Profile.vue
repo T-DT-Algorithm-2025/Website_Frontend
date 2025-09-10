@@ -41,10 +41,10 @@
         />
 
       <!-- 招聘管理界面（仅管理员可见） -->
-        <RecruitManagementSystem
+        <!-- <RecruitManagementSystem
           v-else-if="activeTab === 'recruit-management'"
           :userInfo="userInfo"
-                  />
+                  /> -->
                 </div>
                 </div>
   </div>
@@ -59,7 +59,7 @@ import ProfileSidebar from '@/components/profile/ProfileSidebar.vue'
 import UserInfoDisplay from '@/components/profile/UserInfoDisplay.vue'
 import UserInfoEdit from '@/components/profile/UserInfoEdit.vue'
 import ApplicationsManagement from '@/components/profile/ApplicationsManagement.vue'
-import RecruitManagementSystem from '@/components/profile/RecruitManagementSystem.vue'
+// import RecruitManagementSystem from '@/components/profile/RecruitManagementSystem.vue'
 
 const router = useRouter()
 const activeTab = ref('info')
