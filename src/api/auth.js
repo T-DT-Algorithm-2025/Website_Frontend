@@ -162,7 +162,13 @@ export const authAPI = {
       const data = await response.json()
       
       if (response.ok && data.success) {
-        return { success: true, data: data }
+        return { 
+          success: true, 
+          data: {
+            positions: data.positions || [],
+            secondStagePositions: data.second_stage_positions || []
+          }
+        }
       } else {
         return { success: false, error: data.error || '获取职位列表失败' }
       }
@@ -262,6 +268,83 @@ export const authAPI = {
       }
     } catch (error) {
       console.error('删除招聘信息时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // ========== 简历与申请相关接口 ==========
+
+  // 获取我的投递列表
+  async getUserSubmissions(recruitId = null) {
+    try {
+      const url = new URL(`${API_BASE_URL}/resume/list`)
+      if (recruitId) {
+        url.searchParams.append('recruit_id', recruitId)
+      }
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        // 根据API文档，返回的是 submissions 字段
+        return { success: true, data: data.submissions || [] }
+      } else {
+        return { success: false, error: data.error || '获取投递列表失败' }
+      }
+    } catch (error) {
+      console.error('获取投递列表时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 获取简历详细信息
+  async getResumeInfo(submitId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/resume/info/${submitId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data: data }
+      } else {
+        return { success: false, error: data.error || '获取简历信息失败' }
+      }
+    } catch (error) {
+      console.error('获取简历信息时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 下载附加文件
+  async downloadAttachment(submitId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/resume/download/${submitId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      
+      if (response.ok) {
+        const blob = await response.blob()
+        return { success: true, blob }
+      } else {
+        const data = await response.json()
+        return { success: false, error: data.error || '下载文件失败' }
+      }
+    } catch (error) {
+      console.error('下载文件时出错:', error)
       return { success: false, error: '网络错误，请稍后重试' }
     }
   }

@@ -1,0 +1,387 @@
+<template>
+  <div class="content-section">
+    <!-- 根据当前视图显示不同组件 -->
+    <ApplicationsList
+      v-if="currentView === 'list'"
+      :recruitList="recruitList"
+      :loading="loading"
+      :showOnlyAvailable="showOnlyAvailable"
+      @toggle-view="toggleView"
+      @view-recruit-detail="viewRecruitDetail"
+      @view-my-submissions="viewMySubmissions"
+    />
+    
+    <ApplicationForm
+      v-else-if="currentView === 'form'"
+      ref="applicationFormRef"
+      :selectedRecruit="selectedRecruit"
+      :positions="positions"
+      :secondStagePositions="secondStagePositions"
+      :isSubmitting="isApplicationSubmitting"
+      @submit="handleApplicationSubmit"
+      @back="backToList"
+    />
+    
+    <MySubmissions
+      v-else-if="currentView === 'my-submissions'"
+      :userSubmissions="userSubmissions"
+      :loading="submissionsLoading"
+      :selectedRecruit="selectedRecruit"
+      @back="backToRecruitListFromSubmissions"
+      @apply-now="applyToRecruit"
+      @view-submission-detail="viewSubmissionDetail"
+    />
+    
+    <SubmissionDetail
+      v-else-if="currentView === 'submission-detail'"
+      :submissionDetail="submissionDetail"
+      :selectedSubmission="selectedSubmission"
+      :selectedRecruit="selectedRecruit"
+      :loading="submissionDetailLoading"
+      :downloadingFile="downloadingFile"
+      @back="backToMySubmissions"
+      @download="downloadAttachment"
+    />
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { authAPI } from '../../api/auth.js'
+import ApplicationsList from './ApplicationsList.vue'
+import ApplicationForm from './ApplicationForm.vue'
+import MySubmissions from './MySubmissions.vue'
+import SubmissionDetail from './SubmissionDetail.vue'
+
+const props = defineProps({
+  userInfo: {
+    type: Object,
+    default: () => null
+  }
+})
+
+const emit = defineEmits(['refresh-recruit-list'])
+
+// 当前视图状态
+const currentView = ref('list') // 'list' | 'form' | 'my-submissions' | 'submission-detail'
+
+// 招聘批次相关状态
+const recruitList = ref([])
+const loading = ref(false)
+const showOnlyAvailable = ref(false)
+const selectedRecruit = ref(null)
+const positions = ref([])
+const secondStagePositions = ref([])
+
+// 我的投递相关状态
+const userSubmissions = ref([])
+const submissionsLoading = ref(false)
+const selectedSubmission = ref(null)
+const submissionDetail = ref(null)
+const submissionDetailLoading = ref(false)
+const downloadingFile = ref(false)
+
+// 申请表单相关状态
+const isApplicationSubmitting = ref(false)
+const applicationFormRef = ref(null)
+
+// 获取招聘批次列表
+const fetchRecruitList = async () => {
+  loading.value = true
+  try {
+    const result = await authAPI.getRecruitList(showOnlyAvailable.value)
+    if (result.success) {
+      recruitList.value = result.data
+    } else {
+      console.error('获取招聘列表失败:', result.error)
+      alert('获取招聘列表失败：' + result.error)
+    }
+  } catch (error) {
+    console.error('获取招聘列表失败:', error)
+    alert('获取招聘列表失败，请稍后重试')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 获取职位列表
+const fetchPositions = async () => {
+  try {
+    const result = await authAPI.getPositions()
+    if (result.success) {
+      positions.value = result.data.positions || []
+      secondStagePositions.value = result.data.secondStagePositions || []
+    } else {
+      console.error('获取职位列表失败:', result.error)
+    }
+  } catch (error) {
+    console.error('获取职位列表失败:', error)
+  }
+}
+
+// 切换视图（显示所有批次/仅显示正在招聘）
+const toggleView = () => {
+  showOnlyAvailable.value = !showOnlyAvailable.value
+  fetchRecruitList()
+}
+
+// 查看招聘详情
+const viewRecruitDetail = async (recruit) => {
+  try {
+    const result = await authAPI.getRecruitInfo(recruit.recruit_id)
+    if (result.success) {
+      const details = [
+        `招聘名称：${result.data.name}`,
+        `批次ID：${result.data.recruit_id}`,
+        `开始时间：${formatDate(result.data.start_time)}`,
+        `结束时间：${formatDate(result.data.end_time)}`,
+        `状态：${getRecruitStatusText(result.data)}`,
+        `描述：${result.data.description || '暂无描述'}`
+      ].join('\n')
+      
+      alert(`招聘详情：\n\n${details}`)
+    } else {
+      alert('获取招聘详情失败：' + result.error)
+    }
+  } catch (error) {
+    console.error('获取招聘详情失败:', error)
+    alert('获取招聘详情失败，请稍后重试')
+  }
+}
+
+// 申请招聘
+const applyToRecruit = (recruit) => {
+  selectedRecruit.value = recruit
+  currentView.value = 'form'
+}
+
+// 查看我的投递
+const viewMySubmissions = async (recruit) => {
+  selectedRecruit.value = recruit
+  currentView.value = 'my-submissions'
+  await fetchUserSubmissions(recruit.recruit_id)
+}
+
+// 获取用户投递列表
+const fetchUserSubmissions = async (recruitId) => {
+  submissionsLoading.value = true
+  try {
+    const result = await authAPI.getUserSubmissions(recruitId)
+    if (result.success) {
+      userSubmissions.value = result.data
+    } else {
+      console.error('获取投递列表失败:', result.error)
+      alert('获取投递列表失败：' + result.error)
+    }
+  } catch (error) {
+    console.error('获取投递列表失败:', error)
+    alert('获取投递列表失败，请稍后重试')
+  } finally {
+    submissionsLoading.value = false
+  }
+}
+
+// 查看投递详情
+const viewSubmissionDetail = async (submission) => {
+  selectedSubmission.value = submission
+  currentView.value = 'submission-detail'
+  await fetchSubmissionDetail(submission.submit_id)
+}
+
+// 获取投递详情
+const fetchSubmissionDetail = async (submitId) => {
+  submissionDetailLoading.value = true
+  try {
+    const result = await authAPI.getResumeInfo(submitId)
+    if (result.success) {
+      submissionDetail.value = result.data
+    } else {
+      console.error('获取投递详情失败:', result.error)
+      alert('获取投递详情失败：' + result.error)
+    }
+  } catch (error) {
+    console.error('获取投递详情失败:', error)
+    alert('获取投递详情失败，请稍后重试')
+  } finally {
+    submissionDetailLoading.value = false
+  }
+}
+
+// 下载附件文件
+const downloadAttachment = async (submitId) => {
+  downloadingFile.value = true
+  try {
+    const result = await authAPI.downloadAttachment(submitId)
+    if (result.success) {
+      // 创建下载链接
+      const url = window.URL.createObjectURL(result.blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = `attachment_${submitId}.pdf` // 默认文件名
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } else {
+      alert('下载文件失败：' + result.error)
+    }
+  } catch (error) {
+    console.error('下载文件失败:', error)
+    alert('下载文件失败，请稍后重试')
+  } finally {
+    downloadingFile.value = false
+  }
+}
+
+// 返回招聘列表
+const backToList = () => {
+  currentView.value = 'list'
+  selectedRecruit.value = null
+  // 重置申请表单
+  if (applicationFormRef.value) {
+    applicationFormRef.value.resetForm()
+  }
+}
+
+// 返回招聘列表（从我的投递页面）
+const backToRecruitListFromSubmissions = () => {
+  currentView.value = 'list'
+  selectedRecruit.value = null
+  userSubmissions.value = []
+}
+
+// 返回我的投递列表
+const backToMySubmissions = () => {
+  currentView.value = 'my-submissions'
+  selectedSubmission.value = null
+  submissionDetail.value = null
+}
+
+// 处理申请提交
+const handleApplicationSubmit = async (applicationForm) => {
+  // 验证必填字段
+  if (!applicationForm.first_choice) {
+    alert('请选择第一志愿')
+    return
+  }
+  
+  if (!applicationForm.self_intro) {
+    alert('请填写自我介绍')
+    return
+  }
+  
+  if (!applicationForm.skills) {
+    alert('请填写技能')
+    return
+  }
+  
+  if (!applicationForm.projects) {
+    alert('请填写项目经历')
+    return
+  }
+  
+  if (!applicationForm.awards) {
+    alert('请填写获奖经历')
+    return
+  }
+  
+  if (!applicationForm.real_head_img) {
+    alert('请上传正面照')
+    return
+  }
+  
+  isApplicationSubmitting.value = true
+  try {
+    // 创建FormData对象
+    const formData = new FormData()
+    
+    // 添加表单数据
+    formData.append('recruit_id', applicationForm.recruit_id)
+    formData.append('first_choice', applicationForm.first_choice)
+    if (applicationForm.second_choice) {
+      formData.append('second_choice', applicationForm.second_choice)
+    }
+    formData.append('self_intro', applicationForm.self_intro)
+    formData.append('skills', applicationForm.skills)
+    formData.append('projects', applicationForm.projects)
+    formData.append('awards', applicationForm.awards)
+    
+    if (applicationForm.grade_point) {
+      formData.append('grade_point', applicationForm.grade_point)
+    }
+    if (applicationForm.grade_rank) {
+      formData.append('grade_rank', applicationForm.grade_rank)
+    }
+    // 添加正面照（必填）
+    formData.append('real_head_img', applicationForm.real_head_img)
+    if (applicationForm.additional_file) {
+      formData.append('additional_file', applicationForm.additional_file)
+    }
+    
+    // 调用后端API提交申请
+    const result = await authAPI.submitApplication(formData)
+    
+    if (result.success) {
+      alert('申请提交成功！请等待审核结果。')
+      // 返回列表视图并刷新数据
+      backToList()
+      fetchRecruitList()
+      userSubmissions.value = []
+      emit('refresh-recruit-list')
+    } else {
+      alert('提交申请失败：' + result.error)
+    }
+    
+  } catch (error) {
+    console.error('提交申请失败:', error)
+    alert('提交失败，请稍后重试')
+  } finally {
+    isApplicationSubmitting.value = false
+  }
+}
+
+// 获取招聘状态显示文本
+const getRecruitStatusText = (recruit) => {
+  if (!recruit.is_active) {
+    return '未发布'
+  } else if (recruit.available) {
+    return '可投递'
+  } else {
+    return '不可投递'
+  }
+}
+
+// 格式化日期
+const formatDate = (date) => {
+  return new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(new Date(date))
+}
+
+// 初始化
+onMounted(() => {
+  fetchRecruitList()
+  fetchPositions()
+})
+
+// 暴露方法给父组件
+defineExpose({
+  fetchRecruitList,
+  fetchPositions
+})
+</script>
+
+<style scoped>
+.content-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  min-height: 0;
+}
+</style>
