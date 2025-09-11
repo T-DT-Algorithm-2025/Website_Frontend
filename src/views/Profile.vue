@@ -53,7 +53,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { authAPI } from '../api/auth.js'
 import NeuralBg from '@/components/inspira/NeuralBg.vue'
 import ProfileSidebar from '@/components/profile/ProfileSidebar.vue'
@@ -63,6 +63,7 @@ import ApplicationsManagement from '@/components/profile/ApplicationsManagement.
 import RecruitManagementSystem from '@/components/profile/RecruitManagementSystem.vue'
 
 const router = useRouter()
+const route = useRoute()
 const activeTab = ref('info')
 const userInfo = ref(null)
 const isSubmitting = ref(false)
@@ -149,6 +150,14 @@ const handleLogout = async () => {
 
 // 组件挂载时获取用户信息
 onMounted(() => {
+  // 检查URL查询参数，如果有tab参数则切换到对应tab
+  if (route.query.tab) {
+    const tab = route.query.tab
+    if (['info', 'edit', 'applications', 'recruit-management'].includes(tab)) {
+      activeTab.value = tab
+    }
+  }
+  
   fetchUserInfo()
 })
 </script>

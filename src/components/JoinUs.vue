@@ -22,12 +22,18 @@
       <div class="container">
         <div class="content-wrapper">
           <div class="heading-section">
-            <span class="subheading">Notice</span>
-            <h2 class="main-heading">投递须知</h2>
+            <span class="subheading">Join Us</span>
+            <h2 class="main-heading">加入我们</h2>
           </div>
           <p class="content-text">
-            投递通道暂时关闭，请关注我们的公众号等渠道获取第一时间的招新信息。
+            欢迎加入T-DT！点击下方按钮管理您的投递申请。
           </p>
+          <div class="action-section">
+            <button class="join-btn" @click="handleJoinClick" :disabled="loading">
+              <span v-if="loading" class="loading-spinner"></span>
+              {{ loading ? '检查登录状态...' : '管理投递' }}
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -35,7 +41,39 @@
 </template>
 
 <script setup>
-// 组件逻辑
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { authAPI } from '../api/auth.js'
+
+const router = useRouter()
+const loading = ref(false)
+
+// 处理加入我们按钮点击
+const handleJoinClick = async () => {
+  loading.value = true
+  
+  try {
+    // 检查用户登录状态
+    const result = await authAPI.getUserInfo()
+    
+    if (result.success) {
+      // 已登录，跳转到profile页面的管理投递tab
+      router.push({ 
+        path: '/profile',
+        query: { tab: 'applications' }
+      })
+    } else {
+      // 未登录，跳转到登录页面
+      router.push('/login')
+    }
+  } catch (error) {
+    console.error('检查登录状态失败:', error)
+    // 出错时也跳转到登录页面
+    router.push('/login')
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -156,8 +194,57 @@
   font-size: 1.2rem;
   color: #666;
   line-height: 1.8;
-  margin: 0;
+  margin: 0 0 2rem 0;
   animation: fadeInUp 1s ease-out 0.6s both;
+}
+
+.action-section {
+  display: flex;
+  justify-content: center;
+  animation: fadeInUp 1s ease-out 0.8s both;
+}
+
+.join-btn {
+  background: linear-gradient(135deg, #f8b400 0%, #ff6b35 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(248, 180, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 150px;
+  justify-content: center;
+}
+
+.join-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(248, 180, 0, 0.4);
+}
+
+.join-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Animations */
