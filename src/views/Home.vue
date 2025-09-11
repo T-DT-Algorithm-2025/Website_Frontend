@@ -1,6 +1,6 @@
 <template>
   <div>
-    <HomeSlider />
+    <SplineHero />
 
     <!-- 其他内容区域 -->
     <section class="content-section">
@@ -18,7 +18,7 @@
 </template>
 
 <script setup>
-import HomeSlider from '../components/HomeSlider.vue'
+import SplineHero from '../components/SplineHero.vue'
 </script>
 
 <style scoped>
