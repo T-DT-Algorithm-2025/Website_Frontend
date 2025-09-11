@@ -318,6 +318,9 @@ import ISelect from '@/components/inspira/ISelect.vue'
 import FileUpload from '@/components/inspira/FileUpload.vue'
 import FileUploadGrid from '@/components/inspira/FileUploadGrid.vue'
 
+import { useAlert } from '@/composables/useAlert'
+const { showAlert } = useAlert()
+
 const props = defineProps({
   selectedRecruit: {
     type: Object,
@@ -528,11 +531,11 @@ const handleStep1Submit = async () => {
       // 进入第二步
       currentStep.value = 2
     } else {
-      alert('更新失败：' + result.error)
+      showAlert('更新失败：' + result.error, 'error')
     }
   } catch (error) {
     console.error('更新用户信息失败:', error)
-    alert('更新失败，请稍后重试')
+    showAlert('更新失败，请稍后重试', 'error')
   } finally {
     isStep1Submitting.value = false
   }
@@ -558,7 +561,7 @@ const handleHeadImgChange = (files) => {
   if (file) {
     // 检查文件大小（5MB限制）
     if (file.size > 5 * 1024 * 1024) {
-      alert('正面照文件大小不能超过 5MB')
+      showAlert('正面照文件大小不能超过 5MB', 'error')
       return
     }
     
@@ -567,7 +570,7 @@ const handleHeadImgChange = (files) => {
     const allowedExtensions = ['.jpg', '.jpeg', '.png']
     const isValidType = allowedExtensions.some(ext => fileName.endsWith(ext))
     if (!isValidType) {
-      alert('正面照只支持 JPG、PNG格式的图片')
+      showAlert('正面照只支持 JPG、PNG格式的图片', 'error')
       return
     }
     
@@ -581,7 +584,7 @@ const handleFileChange = (files) => {
   if (file) {
     // 检查文件大小（10MB限制）
     if (file.size > 10 * 1024 * 1024) {
-      alert('文件大小不能超过 10MB')
+      showAlert('文件大小不能超过 10MB', 'error')
       return
     }
     
@@ -590,7 +593,7 @@ const handleFileChange = (files) => {
     const allowedExtensions = ['.pdf', '.doc', '.docx']
     const isValidType = allowedExtensions.some(ext => fileName.endsWith(ext))
     if (!isValidType) {
-      alert('只支持 PDF、DOC、DOCX 格式的文件')
+      showAlert('只支持 PDF、DOC、DOCX 格式的文件', 'error')
       return
     }
     

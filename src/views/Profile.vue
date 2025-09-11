@@ -62,6 +62,9 @@ import UserInfoEdit from '@/components/profile/UserInfoEdit.vue'
 import ApplicationsManagement from '@/components/profile/ApplicationsManagement.vue'
 import RecruitManagementSystem from '@/components/profile/RecruitManagementSystem.vue'
 
+import { useAlert } from '@/composables/useAlert'
+const { showAlert } = useAlert()
+
 const router = useRouter()
 const route = useRoute()
 const activeTab = ref('info')
@@ -83,7 +86,7 @@ const fetchUserInfo = async () => {
       userInfo.value = result.data
       // 设置头像URL到侧边栏组件
       if (sidebarRef.value?.userInfoRef) {
-        sidebarRef.value.userInfoRef.setAvatarUrl(`https://www.neutdt.cn/api/user/avatar/get`)
+        sidebarRef.value.userInfoRef.setAvatarUrl(`/api/user/avatar/get`)
       }
     } else {
       console.error('获取用户信息失败:', result.error)
@@ -99,7 +102,7 @@ const fetchUserInfo = async () => {
 // 切换标签页
 const switchTab = (tab) => {
   if (tab === 'recruit-management' && !userInfo.value?.permission) {
-      alert('您没有权限访问此功能')
+      showAlert('您没有权限访问此功能', 'error')
       return
     }
   activeTab.value = tab
@@ -120,13 +123,13 @@ const handleSubmit = async (editForm) => {
       await fetchUserInfo()
       // 切换到个人信息页面
       activeTab.value = 'info'
-      alert('信息更新成功！')
+      showAlert('信息更新成功！', 'success')
     } else {
-      alert('更新失败：' + result.error)
+      showAlert('更新失败：' + result.error, 'error')
     }
   } catch (error) {
     console.error('更新用户信息失败:', error)
-    alert('更新失败，请稍后重试')
+    showAlert('更新失败，请稍后重试', 'error')
   } finally {
     isSubmitting.value = false
   }
@@ -140,11 +143,11 @@ const handleLogout = async () => {
     if (result.success) {
       router.push('/')
     } else {
-      alert('登出失败：' + result.error)
+      showAlert('登出失败：' + result.error, 'error')
     }
   } catch (error) {
-    console.error('登出失败:', error)
-    alert('登出失败，请稍后重试')
+    console.error('登出失败:', error, 'error')
+    showAlert('登出失败，请稍后重试', 'error')
   }
 }
 

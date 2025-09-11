@@ -46,7 +46,7 @@ const fetchUserInfo = async () => {
     if (result.success) {
       userInfo.value = result.data
       // 设置头像URL
-      avatarUrl.value = `https://www.neutdt.cn/api/user/avatar/get`
+      avatarUrl.value = `/api/user/avatar/get`
       // 发出登录成功事件
       emit('login-success')
     }

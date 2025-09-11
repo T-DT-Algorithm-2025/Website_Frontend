@@ -73,6 +73,9 @@ import { authAPI } from '../api/auth.js'
 import IInput from '@/components/inspira/IInput.vue'
 import InteractiveHoverButton from '@/components/inspira/InteractiveHoverButton.vue'
 
+import { useAlert } from '@/composables/useAlert'
+const { showAlert } = useAlert()
+
 const router = useRouter()
 
 // 邮箱登录相关变量
@@ -138,11 +141,11 @@ const handleQQLogin = async () => {
       window.open(qqAuthUrl, '_blank')
     } else {
       console.error('设置重定向URL失败:', result.error)
-      alert('登录准备失败，请稍后重试')
+      showAlert('登录准备失败，请稍后重试', 'error')
     }
   } catch (error) {
     console.error('QQ登录时出错:', error)
-    alert('登录失败，请稍后重试')
+    showAlert('登录失败，请稍后重试', 'error')
   }
 }
 

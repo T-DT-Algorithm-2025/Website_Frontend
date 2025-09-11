@@ -79,6 +79,9 @@ import SubmissionDetail from './SubmissionDetail.vue'
 import UserRecruitDetail from './UserRecruitDetail.vue'
 import EditResumeForm from './EditResumeForm.vue'
 
+import { useAlert } from '@/composables/useAlert'
+const { showAlert } = useAlert()
+
 const props = defineProps({
   userInfo: {
     type: Object,
@@ -125,11 +128,11 @@ const fetchRecruitList = async () => {
       recruitList.value = result.data
     } else {
       console.error('获取招聘列表失败:', result.error)
-      alert('获取招聘列表失败：' + result.error)
+      showAlert('获取招聘列表失败：' + result.error, 'error')
     }
   } catch (error) {
     console.error('获取招聘列表失败:', error)
-    alert('获取招聘列表失败，请稍后重试')
+    showAlert('获取招聘列表失败，请稍后重试', 'error')
   } finally {
     loading.value = false
   }
@@ -167,12 +170,12 @@ const viewRecruitDetail = async (recruit) => {
     if (result.success) {
       viewingRecruitDetail.value = result.data
     } else {
-      alert('获取招聘详情失败：' + result.error)
+      showAlert('获取招聘详情失败：' + result.error, 'error')
       currentView.value = 'list'
     }
   } catch (error) {
     console.error('获取招聘详情失败:', error)
-    alert('获取招聘详情失败，请稍后重试')
+    showAlert('获取招聘详情失败，请稍后重试', 'error')
     currentView.value = 'list'
   } finally {
     recruitDetailLoading.value = false
@@ -201,11 +204,11 @@ const fetchUserSubmissions = async (recruitId) => {
       userSubmissions.value = result.data
     } else {
       console.error('获取投递列表失败:', result.error)
-      alert('获取投递列表失败：' + result.error)
+      showAlert('获取投递列表失败：' + result.error, 'error')
     }
   } catch (error) {
     console.error('获取投递列表失败:', error)
-    alert('获取投递列表失败，请稍后重试')
+    showAlert('获取投递列表失败，请稍后重试', 'error')
   } finally {
     submissionsLoading.value = false
   }
@@ -227,11 +230,11 @@ const fetchSubmissionDetail = async (submitId) => {
       submissionDetail.value = result.data
     } else {
       console.error('获取投递详情失败:', result.error)
-      alert('获取投递详情失败：' + result.error)
+      showAlert('获取投递详情失败：' + result.error, 'error')
     }
   } catch (error) {
     console.error('获取投递详情失败:', error)
-    alert('获取投递详情失败，请稍后重试')
+    showAlert('获取投递详情失败，请稍后重试', 'error')
   } finally {
     submissionDetailLoading.value = false
   }
@@ -248,27 +251,27 @@ const editSubmission = async (submission) => {
 const handleEditSubmit = async (editForm) => {
   // 验证必填字段
   if (!editForm.first_choice) {
-    alert('请选择第一志愿')
+    showAlert('请选择第一志愿', 'error')
     return
   }
   
   if (!editForm.self_intro) {
-    alert('请填写自我介绍')
+    showAlert('请填写自我介绍', 'error')
     return
   }
   
   if (!editForm.skills) {
-    alert('请填写技能')
+    showAlert('请填写技能', 'error')
     return
   }
   
   if (!editForm.projects) {
-    alert('请填写项目经历')
+    showAlert('请填写项目经历', 'error')
     return
   }
   
   if (!editForm.awards) {
-    alert('请填写获奖经历')
+    showAlert('请填写获奖经历', 'error')
     return
   }
   
@@ -312,16 +315,16 @@ const handleEditSubmit = async (editForm) => {
     const result = await authAPI.updateResume(selectedSubmission.value.submit_id, formData)
     
     if (result.success) {
-      alert('简历更新成功！')
+      showAlert('简历更新成功！', 'success')
       // 返回到投递列表并刷新数据
       await fetchUserSubmissions(selectedRecruit.value.recruit_id)
       currentView.value = 'my-submissions'
     } else {
-      alert('更新失败：' + result.error)
+      showAlert('更新失败：' + result.error, 'error')
     }
   } catch (error) {
     console.error('更新简历失败:', error)
-    alert('更新失败，请稍后重试')
+    showAlert('更新失败，请稍后重试', 'error')
   } finally {
     isEditSubmitting.value = false
   }
@@ -361,11 +364,11 @@ const downloadAttachment = async (submitId) => {
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
     } else {
-      alert('下载文件失败：' + result.error)
+      showAlert('下载文件失败：' + result.error, 'error')
     }
   } catch (error) {
     console.error('下载文件失败:', error)
-    alert('下载文件失败，请稍后重试')
+    showAlert('下载文件失败，请稍后重试', 'error')
   } finally {
     downloadingFile.value = false
   }
@@ -425,32 +428,32 @@ const handleUserInfoUpdated = () => {
 const handleApplicationSubmit = async (applicationForm) => {
   // 验证必填字段
   if (!applicationForm.first_choice) {
-    alert('请选择第一志愿')
+    showAlert('请选择第一志愿', 'error')
     return
   }
   
   if (!applicationForm.self_intro) {
-    alert('请填写自我介绍')
+    showAlert('请填写自我介绍', 'error')
     return
   }
   
   if (!applicationForm.skills) {
-    alert('请填写技能')
+    showAlert('请填写技能', 'error')
     return
   }
   
   if (!applicationForm.projects) {
-    alert('请填写项目经历')
+    showAlert('请填写项目经历', 'error')
     return
   }
   
   if (!applicationForm.awards) {
-    alert('请填写获奖经历')
+    showAlert('请填写获奖经历', 'error')
     return
   }
   
   if (!applicationForm.real_head_img) {
-    alert('请上传正面照')
+    showAlert('请上传正面照', 'error')
     return
   }
   
@@ -486,19 +489,19 @@ const handleApplicationSubmit = async (applicationForm) => {
     const result = await authAPI.submitApplication(formData)
     
     if (result.success) {
-      alert('申请提交成功！请等待审核结果。')
+      showAlert('申请提交成功！请等待审核结果。', 'success')
       // 返回列表视图并刷新数据
       backToList()
       fetchRecruitList()
       userSubmissions.value = []
       emit('refresh-recruit-list')
     } else {
-      alert('提交申请失败：' + result.error)
+      showAlert('提交申请失败：' + result.error, 'error')
     }
     
   } catch (error) {
     console.error('提交申请失败:', error)
-    alert('提交失败，请稍后重试')
+    showAlert('提交失败，请稍后重试', 'error')
   } finally {
     isApplicationSubmitting.value = false
   }

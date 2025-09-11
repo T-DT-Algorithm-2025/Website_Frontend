@@ -76,6 +76,9 @@ import RecruitManagement from './RecruitManagement.vue'
 import RecruitForm from './RecruitForm.vue'
 import RecruitDetail from './RecruitDetail.vue'
 
+import { useAlert } from '@/composables/useAlert'
+const { showAlert } = useAlert()
+
 const props = defineProps({
   userInfo: {
     type: Object,
@@ -108,11 +111,11 @@ const fetchRecruitList = async () => {
       recruitList.value = result.data || []
     } else {
       console.error('获取招聘列表失败:', result.error)
-      alert('获取招聘列表失败: ' + result.error)
+      showAlert('获取招聘列表失败: ' + result.error, 'error')
     }
   } catch (error) {
     console.error('获取招聘列表时出错:', error)
-    alert('获取招聘列表失败，请稍后重试')
+    showAlert('获取招聘列表失败，请稍后重试', 'error')
   } finally {
     loading.value = false
   }
@@ -141,12 +144,12 @@ const handleViewDetail = async (recruit) => {
     if (result.success) {
       viewingRecruit.value = result.data
     } else {
-      alert('获取招聘详情失败：' + result.error)
+      showAlert('获取招聘详情失败：' + result.error, 'error')
       showDetail.value = false
     }
   } catch (error) {
     console.error('获取招聘详情失败:', error)
-    alert('获取招聘详情失败，请稍后重试')
+    showAlert('获取招聘详情失败，请稍后重试', 'error', 'error')
     showDetail.value = false
   } finally {
     detailLoading.value = false
@@ -174,18 +177,18 @@ const confirmDelete = async () => {
   try {
     const result = await authAPI.deleteRecruit(deleteTarget.value.recruit_id)
     if (result.success) {
-      alert('删除成功')
+      showAlert('删除成功', 'success')
       // 刷新列表
       await fetchRecruitList()
       // 关闭对话框
       showDeleteDialog.value = false
       deleteTarget.value = null
     } else {
-      alert('删除失败: ' + result.error)
+      showAlert('删除失败: ' + result.error, 'error')
     }
   } catch (error) {
     console.error('删除招聘时出错:', error)
-    alert('删除失败，请稍后重试')
+    showAlert('删除失败，请稍后重试', 'error')
   } finally {
     isDeleting.value = false
   }
@@ -212,17 +215,17 @@ const handleFormSubmit = async (formData) => {
     }
     
     if (result.success) {
-      alert(isEditing.value ? '更新成功' : '创建成功')
+      showAlert(isEditing.value ? '更新成功' : '创建成功', 'success')
       showForm.value = false
       editingRecruit.value = null
       // 刷新列表
       await fetchRecruitList()
     } else {
-      alert((isEditing.value ? '更新' : '创建') + '失败: ' + result.error)
+      showAlert((isEditing.value ? '更新' : '创建') + '失败: ' + result.error, 'error')
     }
   } catch (error) {
     console.error('提交表单时出错:', error)
-    alert('操作失败，请稍后重试')
+    showAlert('操作失败，请稍后重试', 'error')
   } finally {
     isSubmitting.value = false
   }

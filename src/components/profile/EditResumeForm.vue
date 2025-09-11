@@ -228,6 +228,9 @@ import FileUpload from '@/components/inspira/FileUpload.vue'
 import FileUploadGrid from '@/components/inspira/FileUploadGrid.vue'
 import { authAPI } from '@/api/auth.js'
 
+import { useAlert } from '@/composables/useAlert'
+const { showAlert } = useAlert()
+
 const props = defineProps({
   selectedRecruit: {
     type: Object,
@@ -313,33 +316,33 @@ const handleBack = () => {
 const handleSubmit = () => {
   // 验证必填字段
   if (!editForm.first_choice) {
-    alert('请选择第一志愿')
+    showAlert('请选择第一志愿', 'error')
     return
   }
   
   if (!editForm.self_intro) {
-    alert('请填写自我介绍')
+    showAlert('请填写自我介绍', 'error')
     return
   }
   
   if (!editForm.skills) {
-    alert('请填写技能')
+    showAlert('请填写技能', 'error')
     return
   }
   
   if (!editForm.projects) {
-    alert('请填写项目经历')
+    showAlert('请填写项目经历', 'error')
     return
   }
   
   if (!editForm.awards) {
-    alert('请填写获奖经历')
+    showAlert('请填写获奖经历', 'error')
     return
   }
   
   // 如果选择更换正面照但未上传新照片
   if (editForm.real_head_img_change && !editForm.real_head_img) {
-    alert('请上传新的正面照')
+    showAlert('请上传新的正面照', 'error')
     return
   }
   
@@ -352,7 +355,7 @@ const handleHeadImgChange = (files) => {
   if (file) {
     // 检查文件大小（5MB限制）
     if (file.size > 5 * 1024 * 1024) {
-      alert('正面照文件大小不能超过 5MB')
+      showAlert('正面照文件大小不能超过 5MB', 'error')
       return
     }
     
@@ -361,7 +364,7 @@ const handleHeadImgChange = (files) => {
     const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif']
     const isValidType = allowedExtensions.some(ext => fileName.endsWith(ext))
     if (!isValidType) {
-      alert('正面照只支持 JPG、PNG、GIF 格式的图片')
+      showAlert('正面照只支持 JPG、PNG、GIF 格式的图片', 'error')
       return
     }
     
@@ -377,7 +380,7 @@ const handleFileChange = (files) => {
   if (file) {
     // 检查文件大小（10MB限制）
     if (file.size > 10 * 1024 * 1024) {
-      alert('文件大小不能超过 10MB')
+      showAlert('文件大小不能超过 10MB', 'error')
       return
     }
     
@@ -386,7 +389,7 @@ const handleFileChange = (files) => {
     const allowedExtensions = ['.pdf', '.doc', '.docx']
     const isValidType = allowedExtensions.some(ext => fileName.endsWith(ext))
     if (!isValidType) {
-      alert('只支持 PDF、DOC、DOCX 格式的文件')
+      showAlert('只支持 PDF、DOC、DOCX 格式的文件', 'error')
       return
     }
     

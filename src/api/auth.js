@@ -1,5 +1,5 @@
 // 认证相关的API服务
-const API_BASE_URL = 'https://www.neutdt.cn/api'
+const API_BASE_URL = '/api'
 
 export const authAPI = {
   // 设置登录重定向URL
@@ -102,7 +102,7 @@ export const authAPI = {
   // 获取招聘列表
   async getRecruitList(onlyAvailable = false) {
     try {
-      const url = new URL(`${API_BASE_URL}/recruit/list`)
+      const url = new URL(`${API_BASE_URL}/recruit/list`, window.location.origin)
       if (onlyAvailable) {
         url.searchParams.append('only_available', 'true')
       }
@@ -282,7 +282,7 @@ export const authAPI = {
   // 获取我的投递列表
   async getUserSubmissions(recruitId = null) {
     try {
-      const url = new URL(`${API_BASE_URL}/resume/list`)
+      const url = new URL(`${API_BASE_URL}/resume/list`, window.location.origin)
       if (recruitId) {
         url.searchParams.append('recruit_id', recruitId)
       }

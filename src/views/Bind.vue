@@ -102,6 +102,9 @@ import { authAPI } from '../api/auth.js'
 import IInput from '@/components/inspira/IInput.vue'
 import InteractiveHoverButton from '@/components/inspira/InteractiveHoverButton.vue'
 
+import { useAlert } from '@/composables/useAlert'
+const { showAlert } = useAlert()
+
 const router = useRouter()
 
 // 响应式数据
@@ -203,7 +206,7 @@ async function handleSendCode() {
     if (result.success) {
       verificationSent.value = true
       startCooldown()
-      alert('验证码已发送，请查收邮箱')
+      showAlert('验证码已发送，请查收邮箱', 'success')
     } else {
       errorMessage.value = result.error || '发送验证码失败'
     }
@@ -235,7 +238,7 @@ async function handleBind() {
     )
     
     if (result.success) {
-      alert('邮箱绑定成功！')
+      showAlert('邮箱绑定成功！', 'success')
       router.push('/profile')
     } else {
       errorMessage.value = result.error || '绑定失败'

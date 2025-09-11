@@ -127,6 +127,9 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 
+import { useAlert } from '@/composables/useAlert'
+const { showAlert } = useAlert()
+
 const props = defineProps({
   recruitData: {
     type: Object,
@@ -208,7 +211,7 @@ watch([() => props.recruitData, () => props.isEditing], ([newData, isEditing]) =
 // 处理表单提交
 const handleSubmit = () => {
   if (!isFormValid.value) {
-    alert('请检查表单填写是否正确')
+    showAlert('请检查表单填写是否正确', 'error')
     return
   }
 
@@ -217,7 +220,7 @@ const handleSubmit = () => {
   const endTime = new Date(formData.value.end_time)
   
   if (startTime >= endTime) {
-    alert('结束时间必须晚于开始时间')
+    showAlert('结束时间必须晚于开始时间', 'error')
     return
   }
 

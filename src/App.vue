@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import Navbar from './components/Navbar.vue'
+import CustomAlert from './components/common/CustomAlert.vue' // 导入新的元件
 import Footer from './components/Footer.vue'
 
 const route = useRoute()
@@ -18,6 +19,7 @@ const isProfilePage = computed(() => route.path === '/profile')
     <main class="main-content" :class="{ 'profile-page': isProfilePage }">
       <router-view />
     </main>
+    <CustomAlert /> <!-- 在这里添加元件，使其全局可用 -->
 
     <!-- 在个人中心页面不显示页脚 -->
     <Footer v-if="!isProfilePage" />
