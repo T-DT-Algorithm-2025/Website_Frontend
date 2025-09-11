@@ -17,12 +17,9 @@
     <div v-else-if="submissionDetail" class="submission-detail">
       <!-- 投递基本信息 -->
       <div class="detail-section">
-        <h3 class="section-subtitle">投递信息</h3>
+        <h3 class="section-subtitle">投递信息 - {{ submissionDetail.submission.submit_id }}</h3>
         <div class="info-grid">
-          <div class="info-item">
-            <label>投递ID</label>
-            <span>{{ submissionDetail.submission.submit_id }}</span>
-          </div>
+
           <div class="info-item">
             <label>招聘批次</label>
             <span>{{ selectedRecruit?.name || '未知' }}</span>
@@ -140,8 +137,8 @@
             <div class="file-info">
               <span class="file-icon">📄</span>
               <div class="file-details">
-                <p class="file-name">附加文件</p>
-                <p class="file-description">点击下载查看完整文件</p>
+                <p class="file-name">{{ submissionDetail.info.additional_file_name || '附加文件' }}</p>
+                <p class="file-description">点击下载</p>
               </div>
             </div>
             <button

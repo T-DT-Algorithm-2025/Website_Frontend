@@ -288,9 +288,11 @@ const handleHeadImgChange = (files) => {
       return
     }
     
-    // 检查文件类型
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
-    if (!allowedTypes.includes(file.type)) {
+    // 检查文件类型（基于文件扩展名）
+    const fileName = file.name.toLowerCase()
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif']
+    const isValidType = allowedExtensions.some(ext => fileName.endsWith(ext))
+    if (!isValidType) {
       alert('正面照只支持 JPG、PNG、GIF 格式的图片')
       return
     }
@@ -310,9 +312,11 @@ const handleFileChange = (files) => {
       return
     }
     
-    // 检查文件类型
-    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
-    if (!allowedTypes.includes(file.type)) {
+    // 检查文件类型（基于文件扩展名）
+    const fileName = file.name.toLowerCase()
+    const allowedExtensions = ['.pdf', '.doc', '.docx']
+    const isValidType = allowedExtensions.some(ext => fileName.endsWith(ext))
+    if (!isValidType) {
       alert('只支持 PDF、DOC、DOCX 格式的文件')
       return
     }

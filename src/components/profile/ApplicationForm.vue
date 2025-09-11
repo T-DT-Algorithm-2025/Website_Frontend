@@ -144,7 +144,7 @@
         
         <div class="form-row">
           <div class="form-group">
-            <label for="phone_number">手机号码 <span class="required">*</span></label>
+            <label for="phone_number">手机号码</label>
             <IInput 
               type="tel" 
               id="phone_number" 
@@ -499,11 +499,8 @@ const validateUserInfoForm = () => {
     isValid = false
   }
   
-  // 验证手机号码
-  if (!userInfoForm.phone_number?.trim()) {
-    userInfoErrors.phone_number = '请输入手机号码'
-    isValid = false
-  } else if (!/^1[3-9]\d{9}$/.test(userInfoForm.phone_number.trim())) {
+  // 验证手机号码（非必填，但如果填写了需要验证格式）
+  if (userInfoForm.phone_number?.trim() && !/^1[3-9]\d{9}$/.test(userInfoForm.phone_number.trim())) {
     userInfoErrors.phone_number = '请输入正确的手机号码格式'
     isValid = false
   }
@@ -565,10 +562,12 @@ const handleHeadImgChange = (files) => {
       return
     }
     
-    // 检查文件类型
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
-    if (!allowedTypes.includes(file.type)) {
-      alert('正面照只支持 JPG、PNG、GIF 格式的图片')
+    // 检查文件类型（基于文件扩展名）
+    const fileName = file.name.toLowerCase()
+    const allowedExtensions = ['.jpg', '.jpeg', '.png']
+    const isValidType = allowedExtensions.some(ext => fileName.endsWith(ext))
+    if (!isValidType) {
+      alert('正面照只支持 JPG、PNG格式的图片')
       return
     }
     
@@ -586,9 +585,11 @@ const handleFileChange = (files) => {
       return
     }
     
-    // 检查文件类型
-    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
-    if (!allowedTypes.includes(file.type)) {
+    // 检查文件类型（基于文件扩展名）
+    const fileName = file.name.toLowerCase()
+    const allowedExtensions = ['.pdf', '.doc', '.docx']
+    const isValidType = allowedExtensions.some(ext => fileName.endsWith(ext))
+    if (!isValidType) {
       alert('只支持 PDF、DOC、DOCX 格式的文件')
       return
     }
@@ -642,7 +643,7 @@ const handleFileChange = (files) => {
 }
 
 .edit-form {
-  max-width: 800px;
+  width: 100%;
   flex: 1;
   overflow-y: auto;
   padding-right: 0.5rem;

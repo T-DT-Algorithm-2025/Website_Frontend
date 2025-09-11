@@ -331,6 +331,23 @@ const handleEditSubmit = async (editForm) => {
 const downloadAttachment = async (submitId) => {
   downloadingFile.value = true
   try {
+    // 首先获取简历信息以获得正确的文件名
+    const infoResult = await authAPI.getResumeInfo(submitId)
+    let fileName = `attachment_${submitId}.pdf` // 默认文件名
+    
+    if (infoResult.success && infoResult.data.info) {
+      // 优先使用 additional_file_name 字段
+      if (infoResult.data.info.additional_file_name) {
+        fileName = infoResult.data.info.additional_file_name
+      } 
+      // 如果没有 additional_file_name，则从 additional_file_path 中提取文件名
+      else if (infoResult.data.info.additional_file_path) {
+        const pathParts = infoResult.data.info.additional_file_path.split('/')
+        fileName = pathParts[pathParts.length - 1] || fileName
+      }
+    }
+    
+    // 下载文件
     const result = await authAPI.downloadAttachment(submitId)
     if (result.success) {
       // 创建下载链接
@@ -338,7 +355,7 @@ const downloadAttachment = async (submitId) => {
       const a = document.createElement('a')
       a.style.display = 'none'
       a.href = url
-      a.download = `attachment_${submitId}.pdf` // 默认文件名
+      a.download = fileName
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
