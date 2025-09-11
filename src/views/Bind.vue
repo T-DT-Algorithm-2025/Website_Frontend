@@ -198,7 +198,7 @@ async function handleSendCode() {
   loadingText.value = '发送验证码中...'
 
   try {
-    const result = await authAPI.sendVerificationCode(email.value)
+    const result = await authAPI.sendVerificationCode(email.value, 'mail')
     
     if (result.success) {
       verificationSent.value = true

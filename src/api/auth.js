@@ -426,16 +426,21 @@ export const authAPI = {
   },
 
   // 发送邮箱验证码
-  async sendVerificationCode(email) {
+  async sendVerificationCode(email, bundleName = null) {
     try {
+      const requestBody = { mail: email }
+      
+      // 如果提供了 bundleName，则添加到请求体中
+      if (bundleName) {
+        requestBody.bundle_name = bundleName
+      }
+      
       const response = await fetch(`${API_BASE_URL}/mail/verify/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          mail: email
-        }),
+        body: JSON.stringify(requestBody),
         credentials: 'include'
       })
       
