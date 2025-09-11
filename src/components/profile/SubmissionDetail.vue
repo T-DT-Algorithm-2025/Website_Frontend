@@ -2,7 +2,7 @@
   <div class="content-section">
     <div class="form-header">
       <h2 class="section-title">
-        投递详情 - #{{ selectedSubmission?.submit_id || '' }}
+        投递详情
       </h2>
       <button class="back-btn" @click="handleBack">
         ← 返回投递列表

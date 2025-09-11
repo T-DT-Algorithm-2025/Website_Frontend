@@ -9,7 +9,7 @@
       >
     </div>
     <h3 class="username">{{ userInfo?.nickname || '用户名' }}</h3>
-    <p class="user-role">{{ userInfo?.rank || '学生' }}</p>
+    <p class="user-role">{{ userInfo?.mail || '学生' }}</p>
   </div>
 </template>
 

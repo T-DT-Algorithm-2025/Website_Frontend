@@ -120,7 +120,7 @@
       
       <div class="form-row">
         <div class="form-group">
-          <label for="phone_number">手机号码 <span class="required">*</span></label>
+          <label for="phone_number">手机号码</label>
           <IInput 
             type="tel" 
             id="phone_number" 
@@ -261,11 +261,8 @@ const validateForm = () => {
     isValid = false
   }
   
-  // 验证手机号码
-  if (!editForm.phone_number?.trim()) {
-    formErrors.phone_number = '请输入手机号码'
-    isValid = false
-  } else if (!/^1[3-9]\d{9}$/.test(editForm.phone_number.trim())) {
+  // 验证手机号码（可选，但如果填写则需要格式正确）
+  if (editForm.phone_number?.trim() && !/^1[3-9]\d{9}$/.test(editForm.phone_number.trim())) {
     formErrors.phone_number = '请输入正确的手机号码格式'
     isValid = false
   }
