@@ -224,8 +224,9 @@ async function handleRegister() {
     
     if (result.success) {
       alert('注册成功！欢迎加入我们！')
-      // 注册成功后跳转到个人资料页面
-      router.push('/profile')
+      // 注册成功后，用户已经自动登录，跳转到首页
+      // 首页的导航栏会自动检测登录状态并显示头像
+      router.push('/')
     } else {
       errorMessage.value = result.error || '注册失败'
     }

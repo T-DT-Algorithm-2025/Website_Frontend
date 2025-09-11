@@ -112,7 +112,8 @@ const handleEmailLogin = async () => {
     const result = await authAPI.loginWithEmail(email.value, password.value)
     
     if (result.success) {
-      // 登录成功，重定向到首页或之前的页面
+      // 登录成功，重定向到首页
+      // 导航栏会通过路由监听自动检测登录状态并显示头像
       router.push('/')
     } else {
       errorMessage.value = result.error || '登录失败，请检查邮箱和密码'

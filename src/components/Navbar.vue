@@ -70,7 +70,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import UserAvatar from './UserAvatar.vue'
 import { authAPI } from '../api/auth.js'
@@ -106,6 +106,14 @@ const checkLoginStatus = async () => {
     isLoggedIn.value = false
   }
 }
+
+// 监听路由变化，重新检查登录状态
+watch(route, async (newRoute) => {
+  // 当从登录页面跳转到其他页面时，重新检查登录状态
+  if (newRoute.path !== '/login' && newRoute.path !== '/register') {
+    await checkLoginStatus()
+  }
+}, { immediate: false })
 
 // 组件挂载时检查登录状态并添加事件监听
 onMounted(() => {
