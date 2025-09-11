@@ -109,7 +109,7 @@
     </div>
 
     <!-- 操作按钮 -->
-    <div class="detail-actions">
+    <div v-if="recruitDetail" class="detail-actions">
       <button class="action-btn secondary-btn" @click="handleClose">
         关闭
       </button>
@@ -177,6 +177,7 @@ const getRecruitStatusClass = (recruit) => {
 
 // 格式化日期
 const formatDate = (date) => {
+    if (!date) return 'N/A';
   return new Intl.DateTimeFormat('zh-CN', {
     year: 'numeric',
     month: '2-digit',
@@ -189,12 +190,16 @@ const formatDate = (date) => {
 </script>
 
 <style scoped>
+/* --- 桌面端默认样式 --- */
 .recruit-detail-container {
   width: 100%;
   max-width: 700px;
   background: white;
   border-radius: 16px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
 .detail-header {
@@ -204,6 +209,7 @@ const formatDate = (date) => {
   padding: 1.5rem 2rem;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   border-bottom: 1px solid #dee2e6;
+  flex-shrink: 0;
 }
 
 .detail-header h3 {
@@ -230,15 +236,17 @@ const formatDate = (date) => {
 .close-btn:hover {
   background: rgba(220, 53, 69, 0.1);
   color: #dc3545;
+  transform: rotate(90deg);
 }
 
-.loading-state {
+.loading-state, .error-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 4rem 2rem;
   color: #666;
+  flex-grow: 1;
 }
 
 .loading-spinner {
@@ -257,8 +265,6 @@ const formatDate = (date) => {
 }
 
 .error-state {
-  padding: 4rem 2rem;
-  text-align: center;
   color: #dc3545;
 }
 
@@ -266,12 +272,12 @@ const formatDate = (date) => {
   padding: 2rem;
   max-height: 70vh;
   overflow-y: auto;
+  flex-grow: 1;
 }
 
 .detail-section {
   margin-bottom: 2rem;
 }
-
 .detail-section:last-child {
   margin-bottom: 0;
 }
@@ -296,7 +302,6 @@ const formatDate = (date) => {
   flex-direction: column;
   gap: 0.5rem;
 }
-
 .detail-group.full-width {
   grid-column: 1 / -1;
 }
@@ -346,7 +351,7 @@ const formatDate = (date) => {
   white-space: nowrap;
 }
 
-.status-active {
+.status-active, .status-available {
   background: rgba(40, 167, 69, 0.2);
   color: #155724;
   border: 1px solid rgba(40, 167, 69, 0.5);
@@ -356,12 +361,6 @@ const formatDate = (date) => {
   background: rgba(108, 117, 125, 0.2);
   color: #495057;
   border: 1px solid rgba(108, 117, 125, 0.5);
-}
-
-.status-available {
-  background: rgba(40, 167, 69, 0.2);
-  color: #155724;
-  border: 1px solid rgba(40, 167, 69, 0.5);
 }
 
 .status-ended {
@@ -403,6 +402,7 @@ const formatDate = (date) => {
   padding: 1.5rem 2rem;
   background: #f8f9fa;
   border-top: 1px solid #dee2e6;
+  flex-shrink: 0;
 }
 
 .action-btn {
@@ -420,7 +420,6 @@ const formatDate = (date) => {
   background: #6c757d;
   color: white;
 }
-
 .secondary-btn:hover {
   background: #5a6268;
   transform: translateY(-1px);
@@ -431,47 +430,49 @@ const formatDate = (date) => {
   color: white;
   box-shadow: 0 4px 15px rgba(248, 180, 0, 0.3);
 }
-
 .primary-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(248, 180, 0, 0.4);
 }
 
-/* 滚动条样式 */
 .recruit-detail::-webkit-scrollbar {
   width: 6px;
 }
-
 .recruit-detail::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.05);
   border-radius: 3px;
 }
-
 .recruit-detail::-webkit-scrollbar-thumb {
   background: rgba(248, 180, 0, 0.3);
   border-radius: 3px;
-  transition: background 0.3s ease;
 }
-
 .recruit-detail::-webkit-scrollbar-thumb:hover {
   background: rgba(248, 180, 0, 0.5);
 }
 
-/* 响应式设计 */
+/* --- 移动端适配 (<= 768px) --- */
 @media (max-width: 768px) {
   .recruit-detail-container {
-    width: 95vw;
-    max-width: 95vw;
-    max-height: 90vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 0;
+    z-index: 2000;
   }
   
   .detail-header {
     padding: 1rem 1.5rem;
   }
+  .detail-header h3 {
+      font-size: 1.1rem;
+  }
   
   .recruit-detail {
     padding: 1.5rem;
-    max-height: 60vh;
   }
   
   .detail-row {
@@ -481,23 +482,34 @@ const formatDate = (date) => {
   
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .stat-value {
+      font-size: 1.25rem;
   }
   
   .detail-actions {
-    flex-direction: column;
+    flex-direction: row;
     gap: 0.75rem;
     padding: 1rem 1.5rem;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
   }
   
   .action-btn {
     width: 100%;
-    justify-content: center;
+    flex: 1;
+    padding: 0.85rem;
   }
 }
 
 @media (max-width: 480px) {
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  .detail-actions {
+      flex-direction: column;
   }
 }
 </style>
