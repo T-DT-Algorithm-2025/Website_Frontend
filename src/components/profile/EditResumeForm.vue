@@ -194,7 +194,7 @@
             <FileUpload 
               class="rounded-lg border border-dashed border-neutral-200 dark:border-neutral-800"
               title="更换附加文件"
-              description="支持 PDF、DOC、DOCX 格式，文件大小不超过 10MB"
+              description="支持 PDF、DOC、DOCX、ZIP 格式，文件大小不超过 10MB"
               @onChange="handleFileChange"
             >
               <FileUploadGrid />
@@ -386,10 +386,10 @@ const handleFileChange = (files) => {
     
     // 检查文件类型（基于文件扩展名）
     const fileName = file.name.toLowerCase()
-    const allowedExtensions = ['.pdf', '.doc', '.docx']
+    const allowedExtensions = ['.pdf', '.doc', '.docx', '.zip']
     const isValidType = allowedExtensions.some(ext => fileName.endsWith(ext))
     if (!isValidType) {
-      showAlert('只支持 PDF、DOC、DOCX 格式的文件', 'error')
+      showAlert('只支持 PDF、DOC、DOCX、ZIP 格式的文件', 'error')
       return
     }
     

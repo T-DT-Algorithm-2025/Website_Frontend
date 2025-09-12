@@ -69,12 +69,12 @@
             >
               编辑
             </button>
-            <button 
+            <!-- <button 
               class="action-btn delete-btn" 
               @click="deleteRecruit(recruit)"
             >
               删除
-            </button>
+            </button> -->
           </div>
         </div>
       </div>
