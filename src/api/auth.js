@@ -512,5 +512,135 @@ export const authAPI = {
       console.error('邮箱登录时出错:', error)
       return { success: false, error: '网络错误，请稍后重试' }
     }
+  },
+
+  // ========== 用户管理接口 ==========
+
+  // 获取所有用户列表
+  async getAllUsers() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/user/list`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data: data.data }
+      } else {
+        return { success: false, error: data.error || '获取用户列表失败' }
+      }
+    } catch (error) {
+      console.error('获取用户列表时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 批量删除用户
+  async batchDeleteUsers(uids) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/user/batch/delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ uids }),
+        credentials: 'include'
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data }
+      } else {
+        return { success: false, error: data.error || '批量删除用户失败' }
+      }
+    } catch (error) {
+      console.error('批量删除用户时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 更新用户权限
+  async updateUserPermissions(uid, permissions) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/user/permissions/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid,
+          ...permissions
+        }),
+        credentials: 'include'
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data }
+      } else {
+        return { success: false, error: data.error || '更新用户权限失败' }
+      }
+    } catch (error) {
+      console.error('更新用户权限时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 获取用户权限
+  async getUserPermissions(uid) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/user/permissions/get/${uid}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data: data.data }
+      } else {
+        return { success: false, error: data.error || '获取用户权限失败' }
+      }
+    } catch (error) {
+      console.error('获取用户权限时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 搜索用户
+  async searchUsers(query) {
+    try {
+      const url = new URL(`${API_BASE_URL}/admin/user/search`, window.location.origin)
+      url.searchParams.append('query', query)
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data: data.data }
+      } else {
+        return { success: false, error: data.error || '搜索用户失败' }
+      }
+    } catch (error) {
+      console.error('搜索用户时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
   }
 }

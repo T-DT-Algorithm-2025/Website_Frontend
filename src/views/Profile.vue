@@ -46,6 +46,12 @@
           v-else-if="activeTab === 'recruit-management'"
           :userInfo="userInfo"
         />
+
+      <!-- 用户管理界面（仅管理员可见） -->
+        <UserManagement
+          v-else-if="activeTab === 'user-management'"
+          :userInfo="userInfo"
+        />
                 </div>
                 </div>
   </div>
@@ -61,6 +67,7 @@ import UserInfoDisplay from '@/components/profile/UserInfoDisplay.vue'
 import UserInfoEdit from '@/components/profile/UserInfoEdit.vue'
 import ApplicationsManagement from '@/components/profile/ApplicationsManagement.vue'
 import RecruitManagementSystem from '@/components/profile/RecruitManagementSystem.vue'
+import UserManagement from '@/components/profile/UserManagement.vue'
 
 import { useAlert } from '@/composables/useAlert'
 const { showAlert } = useAlert()
@@ -101,7 +108,7 @@ const fetchUserInfo = async () => {
 
 // 切换标签页
 const switchTab = (tab) => {
-  if (tab === 'recruit-management' && !userInfo.value?.permission) {
+  if ((tab === 'recruit-management' || tab === 'user-management') && !userInfo.value?.permission) {
       showAlert('您没有权限访问此功能', 'error')
       return
     }
@@ -156,7 +163,7 @@ onMounted(() => {
   // 检查URL查询参数，如果有tab参数则切换到对应tab
   if (route.query.tab) {
     const tab = route.query.tab
-    if (['info', 'edit', 'applications', 'recruit-management'].includes(tab)) {
+    if (['info', 'edit', 'applications', 'recruit-management', 'user-management'].includes(tab)) {
       activeTab.value = tab
     }
   }
