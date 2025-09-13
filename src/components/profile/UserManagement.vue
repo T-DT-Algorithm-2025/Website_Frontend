@@ -81,7 +81,7 @@
             <span class="uid-text">{{ user.uid }}</span>
           </div>
           <div class="user-cell name-cell">
-            <span class="name-text">{{ user.name || '未设置' }}</span>
+            <span class="name-text">{{ user.realname || '未设置' }}</span>
           </div>
           <div class="user-cell email-cell">
             <span class="email-text">{{ user.email }}</span>

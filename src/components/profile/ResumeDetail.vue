@@ -19,7 +19,7 @@
       
       <!-- 基本信息 -->
       <div class="info-section">
-        <h3 class="section-title">基本信息</h3>
+        <h3 class="section-title">简历基本信息</h3>
         <div class="info-grid">
           <div class="info-item">
             <label>简历ID:</label>
@@ -43,6 +43,63 @@
               {{ getStatusName(resumeData.submission?.status) }}
             </span>
           </div>
+        </div>
+      </div>
+
+      <!-- 用户个人信息 -->
+      <div class="info-section">
+        <h3 class="section-title">
+          用户个人信息
+          <span v-if="isLoadingUserInfo" class="loading-text">加载中...</span>
+        </h3>
+        <div v-if="userInfo" class="info-grid">
+          <div class="info-item">
+            <label>真实姓名:</label>
+            <span>{{ userInfo.realname || '未填写' }}</span>
+          </div>
+          <div class="info-item">
+            <label>性别:</label>
+            <span>{{ userInfo.gender || '未填写' }}</span>
+          </div>
+          <div class="info-item">
+            <label>学号:</label>
+            <span>{{ userInfo.student_id || '未填写' }}</span>
+          </div>
+          <div class="info-item">
+            <label>院系:</label>
+            <span>{{ userInfo.department || '未填写' }}</span>
+          </div>
+          <div class="info-item">
+            <label>专业:</label>
+            <span>{{ userInfo.major || '未填写' }}</span>
+          </div>
+          <div class="info-item">
+            <label>年级:</label>
+            <span>{{ userInfo.grade || '未填写' }}</span>
+          </div>
+          <div class="info-item">
+            <label>班级/排名:</label>
+            <span>{{ userInfo.rank || '未填写' }}</span>
+          </div>
+          <div class="info-item">
+            <label>联系电话:</label>
+            <span>{{ userInfo.phone_number || '未填写' }}</span>
+          </div>
+          <div class="info-item">
+            <label>认证状态:</label>
+            <span class="verification-badge" :class="{ verified: userInfo.is_verified }">
+              {{ userInfo.is_verified ? '已认证' : '未认证' }}
+            </span>
+          </div>
+          <div class="info-item">
+            <label>权限等级:</label>
+            <span class="permission-badge" :class="{ admin: userInfo.permission }">
+              {{ userInfo.permission ? '管理员' : '普通用户' }}
+            </span>
+          </div>
+        </div>
+        <div v-else-if="!isLoadingUserInfo" class="no-user-info">
+          <span class="error-text">无法获取用户信息</span>
         </div>
       </div>
 
@@ -258,6 +315,10 @@ const emit = defineEmits(['close', 'status-updated', 'add-review'])
 const newStatus = ref('')
 const isUpdatingStatus = ref(false)
 
+// 用户信息相关
+const userInfo = ref(null)
+const isLoadingUserInfo = ref(false)
+
 // 评审相关
 const reviews = ref([])
 const newReview = ref({
@@ -393,6 +454,27 @@ const deleteReview = async (reviewId) => {
   }
 }
 
+// 获取用户个人信息
+const fetchUserInfo = async () => {
+  if (!props.resumeData?.submission?.uid) return
+  
+  isLoadingUserInfo.value = true
+  try {
+    const result = await authAPI.getUserInfo(props.resumeData.submission.uid)
+    if (result.success) {
+      userInfo.value = result.data
+    } else {
+      console.error('获取用户信息失败:', result.error)
+      userInfo.value = null
+    }
+  } catch (error) {
+    console.error('获取用户信息时出错:', error)
+    userInfo.value = null
+  } finally {
+    isLoadingUserInfo.value = false
+  }
+}
+
 // 获取评审记录
 const fetchReviews = async () => {
   if (!props.resumeData?.submission?.submit_id) return
@@ -485,10 +567,11 @@ const formatDate = (date) => {
   }).format(new Date(date))
 }
 
-// 组件挂载时获取评审记录
+// 组件挂载时获取数据
 onMounted(() => {
   if (props.resumeData?.submission?.submit_id) {
     fetchReviews()
+    fetchUserInfo()
   }
 })
 </script>
@@ -652,6 +735,55 @@ onMounted(() => {
   background: rgba(108, 117, 125, 0.2);
   color: #495057;
   border: 1px solid rgba(108, 117, 125, 0.5);
+}
+
+.loading-text {
+  font-size: 0.8rem;
+  color: #666;
+  font-weight: normal;
+  margin-left: 0.5rem;
+}
+
+.verification-badge, .permission-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.verification-badge {
+  background: rgba(108, 117, 125, 0.2);
+  color: #495057;
+  border: 1px solid rgba(108, 117, 125, 0.5);
+}
+
+.verification-badge.verified {
+  background: rgba(40, 167, 69, 0.2);
+  color: #155724;
+  border: 1px solid rgba(40, 167, 69, 0.5);
+}
+
+.permission-badge {
+  background: rgba(108, 117, 125, 0.2);
+  color: #495057;
+  border: 1px solid rgba(108, 117, 125, 0.5);
+}
+
+.permission-badge.admin {
+  background: rgba(220, 53, 69, 0.2);
+  color: #721c24;
+  border: 1px solid rgba(220, 53, 69, 0.5);
+}
+
+.no-user-info {
+  padding: 2rem;
+  text-align: center;
+}
+
+.error-text {
+  color: #dc3545;
+  font-style: italic;
 }
 
 .status-section {
