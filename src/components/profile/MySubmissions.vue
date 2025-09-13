@@ -42,21 +42,23 @@
               <span class="submission-time">
                 投递时间：{{ formatDate(submission.submit_time) }}
               </span>
-              <span class="submission-status" :class="getSubmissionStatusClass(submission.status)">
-                {{ submission.status_name }}
-              </span>
             </div>
+          </div>
+          <div class="submission-status-area">
+            <span class="submission-status" :class="getSubmissionStatusClass(submission.status)">
+              {{ submission.status_name }}
+            </span>
           </div>
         </div>
 
         <div class="card-content">
           <div class="submission-details">
             <div class="detail-item">
-              <strong>投递ID：</strong>{{ submission.submit_id }}
+              <strong>招聘批次：</strong>{{ selectedRecruit?.name || `批次 ${submission.recruit_id}` }}
             </div>
-            <div class="detail-item">
-              <strong>招聘批次：</strong>{{ submission.recruit_id }}
-            </div>
+            <!-- <div class="detail-item">
+              <strong>第一志愿：</strong>{{ submission.first_choice || '未填写' }}
+            </div> -->
             <div class="detail-item">
               <strong>投递时间：</strong>{{ formatDate(submission.submit_time) }}
             </div>
@@ -287,10 +289,15 @@ const formatDate = (date) => {
   padding: 1.5rem;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   border-bottom: 1px solid #dee2e6;
+  gap: 1rem;
 }
 
 .submission-info {
   flex: 1;
+}
+
+.submission-status-area {
+  flex-shrink: 0;
 }
 
 .submission-title {
@@ -312,9 +319,9 @@ const formatDate = (date) => {
 }
 
 .submission-status {
-  padding: 0.25rem 0.75rem;
+  padding: 0.5rem 1rem;
   border-radius: 20px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 500;
   white-space: nowrap;
   display: inline-block;
@@ -455,8 +462,17 @@ const formatDate = (date) => {
   
   .card-header {
     padding: 1rem;
-    flex-direction: column;
+    flex-direction: row;
     gap: 1rem;
+    align-items: flex-start;
+  }
+  
+  .submission-info {
+    flex: 1;
+  }
+  
+  .submission-status-area {
+    flex-shrink: 0;
   }
   
   .submission-meta {

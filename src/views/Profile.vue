@@ -98,6 +98,16 @@ const fetchUserInfo = async () => {
     const result = await authAPI.getUserInfo()
     if (result.success) {
       userInfo.value = result.data
+      
+      // 检查用户信息中是否包含mail字段
+      // 根据后端API文档，用户信息应该包含邮箱信息
+      // 如果没有邮箱信息，说明用户需要绑定邮箱账户
+      if (!result.data.mail) {
+        console.log('用户未绑定邮箱，跳转到绑定页面')
+        router.push('/bind')
+        return
+      }
+      
       // 设置头像URL到侧边栏组件
       if (sidebarRef.value?.userInfoRef) {
         sidebarRef.value.userInfoRef.setAvatarUrl(`/api/user/avatar/get`)
