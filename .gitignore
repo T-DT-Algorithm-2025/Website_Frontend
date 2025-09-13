@@ -30,3 +30,5 @@ coverage
 *.tsbuildinfo
 
 .vscode/
+
+后端api
