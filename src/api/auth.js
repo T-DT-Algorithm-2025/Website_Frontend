@@ -644,30 +644,6 @@ export const authAPI = {
     }
   },
 
-  // 获取用户详细信息
-  async getUserInfo(uid) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/admin/user/info/get/${uid}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include'
-      })
-      
-      const data = await response.json()
-      
-      if (response.ok && data.success) {
-        return { success: true, data: data.data }
-      } else {
-        return { success: false, error: data.error || '获取用户信息失败' }
-      }
-    } catch (error) {
-      console.error('获取用户信息时出错:', error)
-      return { success: false, error: '网络错误，请稍后重试' }
-    }
-  },
-
   // ========== 管理员简历管理接口 ==========
 
   // 获取所有简历列表
@@ -842,6 +818,30 @@ export const authAPI = {
       }
     } catch (error) {
       console.error('删除评审意见时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 管理员获取指定用户的个人信息
+  async getAdminUserInfo(targetUid) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/user/info/get/${targetUid}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data: data.data }
+      } else {
+        return { success: false, error: data.error || '获取用户信息失败' }
+      }
+    } catch (error) {
+      console.error('获取用户信息时出错:', error)
       return { success: false, error: '网络错误，请稍后重试' }
     }
   }

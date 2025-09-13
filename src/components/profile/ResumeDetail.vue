@@ -19,7 +19,7 @@
       
       <!-- 基本信息 -->
       <div class="info-section">
-        <h3 class="section-title">简历基本信息</h3>
+        <h3 class="section-title">基本信息</h3>
         <div class="info-grid">
           <div class="info-item">
             <label>简历ID:</label>
@@ -78,24 +78,12 @@
             <span>{{ userInfo.grade || '未填写' }}</span>
           </div>
           <div class="info-item">
-            <label>班级/排名:</label>
+            <label>学历:</label>
             <span>{{ userInfo.rank || '未填写' }}</span>
           </div>
           <div class="info-item">
             <label>联系电话:</label>
             <span>{{ userInfo.phone_number || '未填写' }}</span>
-          </div>
-          <div class="info-item">
-            <label>认证状态:</label>
-            <span class="verification-badge" :class="{ verified: userInfo.is_verified }">
-              {{ userInfo.is_verified ? '已认证' : '未认证' }}
-            </span>
-          </div>
-          <div class="info-item">
-            <label>权限等级:</label>
-            <span class="permission-badge" :class="{ admin: userInfo.permission }">
-              {{ userInfo.permission ? '管理员' : '普通用户' }}
-            </span>
           </div>
         </div>
         <div v-else-if="!isLoadingUserInfo" class="no-user-info">
@@ -288,7 +276,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { authAPI } from '@/api/auth.js'
 
 import { useAlert } from '@/composables/useAlert'
@@ -456,13 +444,19 @@ const deleteReview = async (reviewId) => {
 
 // 获取用户个人信息
 const fetchUserInfo = async () => {
-  if (!props.resumeData?.submission?.uid) return
+  if (!props.resumeData?.submission?.uid) {
+    console.log('缺少用户UID，无法获取用户信息')
+    return
+  }
   
+  console.log('开始获取用户信息，UID:', props.resumeData.submission.uid)
   isLoadingUserInfo.value = true
   try {
-    const result = await authAPI.getUserInfo(props.resumeData.submission.uid)
+    const result = await authAPI.getAdminUserInfo(props.resumeData.submission.uid)
+    console.log('用户信息API响应:', result)
     if (result.success) {
       userInfo.value = result.data
+      console.log('用户信息获取成功:', result.data)
     } else {
       console.error('获取用户信息失败:', result.error)
       userInfo.value = null
@@ -567,11 +561,29 @@ const formatDate = (date) => {
   }).format(new Date(date))
 }
 
+// 监听简历数据变化
+watch(() => props.resumeData, (newData) => {
+  if (newData?.submission) {
+    console.log('简历数据已加载:', newData)
+    if (newData.submission.submit_id) {
+      fetchReviews()
+    }
+    if (newData.submission.uid) {
+      fetchUserInfo()
+    }
+  }
+}, { immediate: true })
+
 // 组件挂载时获取数据
 onMounted(() => {
-  if (props.resumeData?.submission?.submit_id) {
-    fetchReviews()
-    fetchUserInfo()
+  console.log('ResumeDetail组件挂载，当前props.resumeData:', props.resumeData)
+  if (props.resumeData?.submission) {
+    if (props.resumeData.submission.submit_id) {
+      fetchReviews()
+    }
+    if (props.resumeData.submission.uid) {
+      fetchUserInfo()
+    }
   }
 })
 </script>

@@ -53,7 +53,6 @@
           <div class="resume-info">
             <h3 class="resume-title">{{ resume.display_name }}</h3>
             <div class="resume-meta">
-              <span class="resume-id">简历ID: {{ resume.submit_id }}</span>
               <span class="resume-time">
                 提交时间: {{ formatDate(resume.submit_time) }}
               </span>
@@ -69,19 +68,10 @@
         <div class="card-content">
           <div class="resume-details">
             <div class="detail-item">
-              <strong>用户UID:</strong> {{ resume.uid }}
-            </div>
-            <div class="detail-item">
-              <strong>真实姓名:</strong> {{ resume.realname || '未获取' }}
-            </div>
-            <div class="detail-item">
               <strong>招聘批次:</strong> {{ getRecruitName(resume.recruit_id) }}
             </div>
             <div class="detail-item">
-              <strong>提交时间:</strong> {{ formatDate(resume.submit_time) }}
-            </div>
-            <div class="detail-item">
-              <strong>第一志愿:</strong> 
+              <strong>第一志愿: </strong> 
               <span v-if="resume.first_choice" class="choice-text">{{ resume.first_choice }}</span>
               <span v-else class="not-loaded">未加载</span>
             </div>
