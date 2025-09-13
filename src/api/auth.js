@@ -642,5 +642,183 @@ export const authAPI = {
       console.error('搜索用户时出错:', error)
       return { success: false, error: '网络错误，请稍后重试' }
     }
+  },
+
+  // ========== 管理员简历管理接口 ==========
+
+  // 获取所有简历列表
+  async getAdminResumeList() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/resume/admin/list`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data: data.data }
+      } else {
+        return { success: false, error: data.error || '获取简历列表失败' }
+      }
+    } catch (error) {
+      console.error('获取简历列表时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 获取简历状态名称列表
+  async getResumeStatusNames() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/resume/status_names`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data: data.data }
+      } else {
+        return { success: false, error: data.error || '获取状态列表失败' }
+      }
+    } catch (error) {
+      console.error('获取状态列表时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 批量更新简历状态
+  async batchUpdateResumeStatus(submitIds, newStatus) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/resume/admin/batch/update_status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          submit_ids: submitIds,
+          new_status: newStatus
+        }),
+        credentials: 'include'
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data }
+      } else {
+        return { success: false, error: data.error || '批量更新简历状态失败' }
+      }
+    } catch (error) {
+      console.error('批量更新简历状态时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 批量删除简历
+  async batchDeleteResumes(submitIds) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/resume/admin/batch/delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          submit_ids: submitIds
+        }),
+        credentials: 'include'
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data }
+      } else {
+        return { success: false, error: data.error || '批量删除简历失败' }
+      }
+    } catch (error) {
+      console.error('批量删除简历时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 添加简历评审意见
+  async addResumeReview(submitId, reviewData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/resume/admin/review/add/${submitId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reviewData),
+        credentials: 'include'
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data }
+      } else {
+        return { success: false, error: data.error || '添加评审意见失败' }
+      }
+    } catch (error) {
+      console.error('添加评审意见时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 获取简历的所有评审意见
+  async getResumeReviews(submitId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/resume/admin/review/get_all/${submitId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data: data.data }
+      } else {
+        return { success: false, error: data.error || '获取评审意见失败' }
+      }
+    } catch (error) {
+      console.error('获取评审意见时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
+  },
+
+  // 删除单条评审意见
+  async deleteResumeReview(reviewId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/resume/admin/review/delete/${reviewId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        return { success: true, data }
+      } else {
+        return { success: false, error: data.error || '删除评审意见失败' }
+      }
+    } catch (error) {
+      console.error('删除评审意见时出错:', error)
+      return { success: false, error: '网络错误，请稍后重试' }
+    }
   }
 }

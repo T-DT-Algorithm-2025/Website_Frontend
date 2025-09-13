@@ -55,6 +55,15 @@
       <div
         v-if="userInfo?.permission"
         class="nav-item"
+        :class="{ active: activeTab === 'resume-management' }"
+        @click="switchTab('resume-management')"
+      >
+        <span class="nav-icon">📄</span>
+        <span class="nav-text">简历管理</span>
+      </div>
+      <div
+        v-if="userInfo?.permission"
+        class="nav-item"
         :class="{ active: activeTab === 'user-management' }"
         @click="switchTab('user-management')"
       >
