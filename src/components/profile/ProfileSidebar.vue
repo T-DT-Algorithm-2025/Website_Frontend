@@ -71,6 +71,15 @@
         <span class="nav-text">用户管理</span>
       </div>
       <div
+        v-if="userInfo?.permission"
+        class="nav-item"
+        :class="{ active: activeTab === 'interview-management' }"
+        @click="switchTab('interview-management')"
+      >
+        <span class="nav-icon">📅</span>
+        <span class="nav-text">面试管理</span>
+      </div>
+      <div
         class="nav-item logout-item"
         @click="handleLogout"
       >

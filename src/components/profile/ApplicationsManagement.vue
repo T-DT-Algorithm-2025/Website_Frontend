@@ -33,6 +33,7 @@
       @apply-now="applyToRecruit"
       @view-submission-detail="viewSubmissionDetail"
       @edit-submission="editSubmission"
+      @book-interview="bookInterview"
     />
     
     <SubmissionDetail
@@ -66,6 +67,14 @@
       @submit="handleEditSubmit"
       @back="backToMySubmissions"
     />
+    
+    <InterviewBooking
+      v-else-if="currentView === 'interview-booking'"
+      :selectedRecruit="selectedRecruit"
+      :selectedSubmission="selectedSubmission"
+      @back="backToMySubmissions"
+      @booking-success="handleBookingSuccess"
+    />
   </div>
 </template>
 
@@ -78,6 +87,7 @@ import MySubmissions from './MySubmissions.vue'
 import SubmissionDetail from './SubmissionDetail.vue'
 import UserRecruitDetail from './UserRecruitDetail.vue'
 import EditResumeForm from './EditResumeForm.vue'
+import InterviewBooking from './InterviewBooking.vue'
 
 import { useAlert } from '@/composables/useAlert'
 const { showAlert } = useAlert()
@@ -92,7 +102,7 @@ const props = defineProps({
 const emit = defineEmits(['refresh-recruit-list', 'user-info-updated'])
 
 // 当前视图状态
-const currentView = ref('list') // 'list' | 'form' | 'my-submissions' | 'submission-detail' | 'recruit-detail' | 'edit-resume'
+const currentView = ref('list') // 'list' | 'form' | 'my-submissions' | 'submission-detail' | 'recruit-detail' | 'edit-resume' | 'interview-booking'
 
 // 招聘批次相关状态
 const recruitList = ref([])
@@ -245,6 +255,12 @@ const editSubmission = async (submission) => {
   selectedSubmission.value = submission
   currentView.value = 'edit-resume'
   await fetchSubmissionDetail(submission.submit_id)
+}
+
+// 预约面试
+const bookInterview = (submission) => {
+  selectedSubmission.value = submission
+  currentView.value = 'interview-booking'
 }
 
 // 处理编辑提交
@@ -422,6 +438,14 @@ const viewMySubmissionsFromDetail = async (recruit) => {
 const handleUserInfoUpdated = () => {
   // 通知父组件刷新用户信息
   emit('user-info-updated')
+}
+
+// 处理面试预约成功
+const handleBookingSuccess = async (bookingData) => {
+  showAlert('面试预约成功！', 'success')
+  // 返回到投递列表并刷新数据
+  await fetchUserSubmissions(selectedRecruit.value.recruit_id)
+  currentView.value = 'my-submissions'
 }
 
 // 处理申请提交

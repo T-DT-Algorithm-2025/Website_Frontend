@@ -65,7 +65,16 @@
           </div>
 
           <div class="card-actions">
+            <!-- 当简历状态为"简历通过"(status=1)时显示预约面试按钮，否则显示修改简历按钮 -->
             <button
+              v-if="false"
+              class="action-btn interview-btn"
+              @click="bookInterview(submission)"
+            >
+              📅 预约面试
+            </button>
+            <button
+              v-else
               class="action-btn edit-btn"
               @click="editSubmission(submission)"
             >
@@ -102,7 +111,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['back', 'apply-now', 'view-submission-detail', 'edit-submission'])
+const emit = defineEmits(['back', 'apply-now', 'view-submission-detail', 'edit-submission', 'book-interview'])
 
 const handleBack = () => {
   emit('back')
@@ -118,6 +127,10 @@ const viewSubmissionDetail = (submission) => {
 
 const editSubmission = (submission) => {
   emit('edit-submission', submission)
+}
+
+const bookInterview = (submission) => {
+  emit('book-interview', submission)
 }
 
 // 获取投递状态样式类
@@ -405,6 +418,17 @@ const formatDate = (date) => {
 
 .view-detail-btn:hover:not(:disabled) {
   background: rgba(52, 152, 219, 0.2);
+  transform: translateY(-1px);
+}
+
+.interview-btn {
+  background: rgba(40, 167, 69, 0.1);
+  color: #28a745;
+  border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.interview-btn:hover:not(:disabled) {
+  background: rgba(40, 167, 69, 0.2);
   transform: translateY(-1px);
 }
 
