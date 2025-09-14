@@ -65,14 +65,24 @@
           </div>
 
           <div class="card-actions">
-            <!-- 当简历状态为"简历通过"(status=1)时显示预约面试按钮，否则显示修改简历按钮 -->
+            <!-- 根据简历状态显示不同的按钮 -->
+            <!-- 简历通过(status=1): 显示预约面试按钮 -->
             <button
-              v-if="false"
+              v-if="submission.status === 1"
               class="action-btn interview-btn"
               @click="bookInterview(submission)"
             >
               📅 预约面试
             </button>
+            <!-- 等待面试/已安排面试(status=2或包含"等待面试"/"已安排"): 显示面试信息按钮 -->
+            <button
+              v-else-if="isWaitingForInterview(submission)"
+              class="action-btn interview-info-btn"
+              @click="viewInterviewInfo(submission)"
+            >
+              📋 面试信息
+            </button>
+            <!-- 其他状态: 显示修改简历按钮 -->
             <button
               v-else
               class="action-btn edit-btn"
@@ -111,7 +121,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['back', 'apply-now', 'view-submission-detail', 'edit-submission', 'book-interview'])
+const emit = defineEmits(['back', 'apply-now', 'view-submission-detail', 'edit-submission', 'book-interview', 'view-interview-info'])
 
 const handleBack = () => {
   emit('back')
@@ -133,12 +143,32 @@ const bookInterview = (submission) => {
   emit('book-interview', submission)
 }
 
+const viewInterviewInfo = (submission) => {
+  emit('view-interview-info', submission)
+}
+
+// 判断是否为等待面试状态
+const isWaitingForInterview = (submission) => {
+  // 检查status值或status_name包含相关关键词
+  if (submission.status === 2) return true
+  if (submission.status_name) {
+    const statusName = submission.status_name.toLowerCase()
+    return statusName.includes('等待面试') || 
+           statusName.includes('已安排') || 
+           statusName.includes('待面试') ||
+           statusName.includes('面试安排')
+  }
+  return false
+}
+
 // 获取投递状态样式类
 const getSubmissionStatusClass = (status) => {
   switch (status) {
     case 0: return 'status-pending' // 未处理
-    case 1: return 'status-passed' // 通过
-    case 2: return 'status-rejected' // 拒绝
+    case 1: return 'status-passed' // 简历通过
+    case 2: return 'status-interview' // 等待面试/已安排面试
+    case 3: return 'status-passed' // 面试通过
+    case 4: return 'status-rejected' // 面试未通过
     default: return 'status-pending'
   }
 }
@@ -430,6 +460,23 @@ const formatDate = (date) => {
 .interview-btn:hover:not(:disabled) {
   background: rgba(40, 167, 69, 0.2);
   transform: translateY(-1px);
+}
+
+.interview-info-btn {
+  background: rgba(23, 162, 184, 0.1);
+  color: #17a2b8;
+  border: 1px solid rgba(23, 162, 184, 0.3);
+}
+
+.interview-info-btn:hover:not(:disabled) {
+  background: rgba(23, 162, 184, 0.2);
+  transform: translateY(-1px);
+}
+
+.status-interview {
+  background: rgba(23, 162, 184, 0.2);
+  color: #0c5460;
+  border: 1px solid rgba(23, 162, 184, 0.5);
 }
 
 /* 滚动条样式 */

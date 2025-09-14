@@ -120,9 +120,9 @@ const loading = reactive({
 
 // 标签页配置
 const tabs = [
-  { key: 'settings', label: '面试设置', icon: '⚙️' },
+  { key: 'settings', label: '合法时间', icon: '⚙️' },
   { key: 'rooms', label: '面试地点', icon: '🏢' },
-  { key: 'schedules', label: '时间安排', icon: '🕐' },
+  { key: 'schedules', label: '面试时间', icon: '🕐' },
   { key: 'interviews', label: '面试列表', icon: '👥' }
 ]
 
@@ -319,11 +319,19 @@ onMounted(() => {
   background: white;
   border-radius: 0 0 12px 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  padding: 2rem;
+  padding: 1.5rem;
+  /* 确保在高缩放时能正常滚动 */
+  overflow: hidden;
 }
 
 .tab-panel {
   animation: fadeIn 0.3s ease;
+  /* 确保内容区域填满容器并支持滚动 */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
 }
 
 @keyframes fadeIn {
@@ -371,6 +379,17 @@ onMounted(() => {
   color: #999;
   line-height: 1.6;
   margin: 0;
+}
+
+/* 高缩放比例优化 */
+@media (max-height: 800px), (min-width: 1024px) and (max-height: 1000px) {
+  .interview-management-header {
+    margin-bottom: 1rem;
+  }
+  
+  .tab-content {
+    padding: 1rem;
+  }
 }
 
 /* 响应式设计 */

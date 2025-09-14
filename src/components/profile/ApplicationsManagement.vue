@@ -34,6 +34,7 @@
       @view-submission-detail="viewSubmissionDetail"
       @edit-submission="editSubmission"
       @book-interview="bookInterview"
+      @view-interview-info="viewInterviewInfo"
     />
     
     <SubmissionDetail
@@ -75,6 +76,13 @@
       @back="backToMySubmissions"
       @booking-success="handleBookingSuccess"
     />
+    
+    <InterviewInfo
+      v-else-if="currentView === 'interview-info'"
+      :selectedRecruit="selectedRecruit"
+      :selectedSubmission="selectedSubmission"
+      @back="backToMySubmissions"
+    />
   </div>
 </template>
 
@@ -88,6 +96,7 @@ import SubmissionDetail from './SubmissionDetail.vue'
 import UserRecruitDetail from './UserRecruitDetail.vue'
 import EditResumeForm from './EditResumeForm.vue'
 import InterviewBooking from './InterviewBooking.vue'
+import InterviewInfo from './InterviewInfo.vue'
 
 import { useAlert } from '@/composables/useAlert'
 const { showAlert } = useAlert()
@@ -102,7 +111,7 @@ const props = defineProps({
 const emit = defineEmits(['refresh-recruit-list', 'user-info-updated'])
 
 // 当前视图状态
-const currentView = ref('list') // 'list' | 'form' | 'my-submissions' | 'submission-detail' | 'recruit-detail' | 'edit-resume' | 'interview-booking'
+const currentView = ref('list') // 'list' | 'form' | 'my-submissions' | 'submission-detail' | 'recruit-detail' | 'edit-resume' | 'interview-booking' | 'interview-info'
 
 // 招聘批次相关状态
 const recruitList = ref([])
@@ -261,6 +270,12 @@ const editSubmission = async (submission) => {
 const bookInterview = (submission) => {
   selectedSubmission.value = submission
   currentView.value = 'interview-booking'
+}
+
+// 查看面试信息
+const viewInterviewInfo = (submission) => {
+  selectedSubmission.value = submission
+  currentView.value = 'interview-info'
 }
 
 // 处理编辑提交

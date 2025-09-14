@@ -238,6 +238,7 @@ onMounted(() => {
   min-height: 100vh;
   position: relative;
   z-index: 1;
+  /* 在高缩放比例下减少padding */
 }
 
 /* 右侧主要内容区域样式 */
@@ -248,10 +249,26 @@ onMounted(() => {
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   padding: 2rem;
-  height: calc(100vh - 4rem);
+  /* 使用最小高度而非固定高度，防止高缩放时内容溢出 */
+  min-height: calc(100vh - 8rem);
+  max-height: calc(100vh - 4rem);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* 高缩放比例优化 */
+@media (max-height: 800px), (min-width: 1024px) and (max-height: 1000px) {
+  .profile-main-content {
+    padding: 1.5rem;
+    gap: 1.5rem;
+  }
+  
+  .main-content {
+    padding: 1.5rem;
+    min-height: calc(100vh - 6rem);
+    max-height: calc(100vh - 3rem);
+  }
 }
 
 /* 响应式设计 */
@@ -265,6 +282,8 @@ onMounted(() => {
   
   .main-content {
     height: auto;
+    min-height: auto;
+    max-height: none;
     overflow-y: visible;
   }
 }

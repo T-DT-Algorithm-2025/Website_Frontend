@@ -30,27 +30,9 @@
           </option>
         </select>
       </div>
-      <div class="loading-indicator" v-if="loading.rooms">
-        <div class="loading-spinner small"></div>
-        <span>加载地点信息...</span>
-      </div>
-    </div>
-
-    <!-- 选中地点后的内容 -->
-    <div v-if="selectedRoomId && selectedRoom" class="schedules-content">
-      <!-- 地点信息卡片 -->
-      <div class="room-info-card">
-        <div class="card-header">
-          <h4 class="room-name">{{ selectedRoom.room_name }}</h4>
-          <span class="choice-badge">{{ selectedRoom.applicable_to_choice }}</span>
-        </div>
-        <div class="card-body">
-          <p class="room-location">📍 {{ selectedRoom.location }}</p>
-        </div>
-      </div>
-
-      <!-- 操作工具栏 -->
-      <div class="schedules-toolbar">
+      
+      <!-- 操作区域 -->
+      <div class="selector-actions" v-if="selectedRoomId && selectedRoom">
         <button 
           @click="showAddModal = true"
           class="btn-primary"
@@ -60,15 +42,22 @@
           批量添加时间段
         </button>
         
-        <div class="toolbar-info">
-          <span class="schedules-count">
-            共 {{ schedulesList.length }} 个时间段
-            <span v-if="bookedCount > 0" class="booked-info">
-              (已预约 {{ bookedCount }} 个)
-            </span>
+        <div class="schedules-count">
+          共 {{ schedulesList.length }} 个时间段
+          <span v-if="bookedCount > 0" class="booked-info">
+            (已预约 {{ bookedCount }} 个)
           </span>
         </div>
       </div>
+      
+      <div class="loading-indicator" v-if="loading.rooms">
+        <div class="loading-spinner small"></div>
+        <span>加载地点信息...</span>
+      </div>
+    </div>
+
+    <!-- 选中地点后的内容 -->
+    <div v-if="selectedRoomId && selectedRoom" class="schedules-content">
 
       <!-- 加载状态 -->
       <div v-if="loading.schedules" class="loading-container">
@@ -566,18 +555,26 @@ onMounted(() => {
 
 <style scoped>
 .interview-schedules {
-  max-width: 1200px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .schedules-header {
   margin-bottom: 2rem;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .schedules-title {
-  font-size: 1.5rem;
+  font-size: 2rem;
+  font-weight: 600;
   color: #333;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f8b400;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -585,12 +582,14 @@ onMounted(() => {
 }
 
 .title-icon {
-  font-size: 1.3rem;
+  font-size: 1.5rem;
 }
 
 .schedules-description {
   color: #666;
   margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 .room-selector {
@@ -598,10 +597,14 @@ onMounted(() => {
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid #3498db;
   margin-bottom: 2rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  flex-shrink: 0;
 }
 
 .selector-group {
@@ -609,18 +612,27 @@ onMounted(() => {
   align-items: center;
   gap: 1rem;
   flex: 1;
+  min-width: 300px;
 }
 
 .selector-label {
   font-weight: 600;
   color: #333;
   min-width: 120px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.selector-label::before {
+  content: "🏢";
+  font-size: 1rem;
 }
 
 .room-select {
   flex: 1;
   max-width: 600px;
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1rem;
   border: 2px solid #e9ecef;
   border-radius: 8px;
   font-size: 1rem;
@@ -638,6 +650,13 @@ onMounted(() => {
   background: #f8f9fa;
   color: #6c757d;
   cursor: not-allowed;
+}
+
+.selector-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
 }
 
 .loading-indicator {
@@ -674,80 +693,34 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-}
-
-.room-info-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-}
-
-.card-header {
-  padding: 1.5rem;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-bottom: 1px solid #dee2e6;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.room-name {
-  color: #333;
-  margin: 0;
-  font-size: 1.2rem;
-}
-
-.choice-badge {
-  background: rgba(248, 180, 0, 0.1);
-  color: #f8b400;
-  padding: 0.25rem 0.75rem;
-  border-radius: 15px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  border: 1px solid rgba(248, 180, 0, 0.3);
-}
-
-.card-body {
-  padding: 1.5rem;
-}
-
-.room-location {
-  color: #666;
-  margin: 0;
-}
-
-.schedules-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-}
-
-.toolbar-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+  flex: 1;
+  min-height: 0;
 }
 
 .schedules-count {
   color: #666;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  background: rgba(248, 180, 0, 0.1);
+  border-radius: 20px;
+  border: 1px solid rgba(248, 180, 0, 0.3);
+  color: #f8b400;
+  white-space: nowrap;
 }
 
 .booked-info {
-  color: #f8b400;
-  font-weight: 500;
+  color: #e74c3c;
+  font-weight: 600;
+  margin-left: 0.5rem;
 }
 
 .btn-primary,
 .btn-secondary,
 .btn-danger {
-  padding: 0.75rem 1rem;
-  border-radius: 6px;
-  font-size: 0.9rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -755,37 +728,45 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  white-space: nowrap;
 }
 
 .btn-primary {
-  background: #f8b400;
+  background: linear-gradient(135deg, #f8b400 0%, #e09900 100%);
   color: white;
+  box-shadow: 0 4px 15px rgba(248, 180, 0, 0.3);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #e09900;
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #e09900 0%, #d08800 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(248, 180, 0, 0.4);
 }
 
 .btn-secondary {
   background: white;
   color: #6c757d;
   border: 2px solid #dee2e6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .btn-secondary:hover:not(:disabled) {
   background: #f8f9fa;
   border-color: #adb5bd;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .btn-danger {
-  background: #dc3545;
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
   color: white;
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: #c82333;
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
 }
 
 .btn-primary:disabled,
@@ -794,6 +775,7 @@ onMounted(() => {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
 .btn-icon {
@@ -801,15 +783,25 @@ onMounted(() => {
 }
 
 .loading-container {
-  text-align: center;
-  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
   color: #666;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .schedules-list {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  min-height: 0;
 }
 
 .schedule-card {
@@ -819,15 +811,13 @@ onMounted(() => {
   overflow: hidden;
   transition: all 0.3s ease;
   border-left: 4px solid #28a745;
-  padding: 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  flex-shrink: 0;
+  min-height: 100px;
 }
 
 .schedule-card.booked {
   border-left-color: #ffc107;
-  background: #fffef0;
+  background: linear-gradient(135deg, #fffef0 0%, #fff8e1 100%);
 }
 
 .schedule-card:hover {
@@ -835,12 +825,23 @@ onMounted(() => {
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
 }
 
+.schedule-card {
+  display: flex;
+  flex-direction: column;
+}
+
 .schedule-info {
-  flex: 1;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom: 1px solid #dee2e6;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
 }
 
 .schedule-time {
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   font-weight: 600;
   color: #333;
   margin-bottom: 0.5rem;
@@ -849,53 +850,76 @@ onMounted(() => {
 .start-time,
 .end-time {
   color: #f8b400;
+  font-weight: 700;
 }
 
 .time-separator {
   color: #666;
-  margin: 0 0.25rem;
+  margin: 0 0.5rem;
+  font-weight: 400;
 }
 
 .schedule-date {
   color: #666;
-  font-size: 0.9rem;
-  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.schedule-date::before {
+  content: "📅";
+  font-size: 0.8rem;
 }
 
 .booked-badge {
-  background: rgba(255, 193, 7, 0.2);
+  background: rgba(255, 193, 7, 0.1);
   color: #856404;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
   font-weight: 500;
-  border: 1px solid rgba(255, 193, 7, 0.5);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  white-space: nowrap;
 }
 
 .schedule-actions {
-  flex-shrink: 0;
-  margin-left: 1rem;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  background: #fafafa;
+  border-top: 1px solid #f0f0f0;
 }
 
 .action-btn {
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 1rem;
   border-radius: 6px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
   border: none;
   background: rgba(220, 53, 69, 0.1);
   color: #dc3545;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  white-space: nowrap;
 }
 
-.action-btn:hover {
+.action-btn:hover:not(:disabled) {
   background: rgba(220, 53, 69, 0.2);
+  transform: translateY(-1px);
 }
 
 .booked-indicator {
   color: #ffc107;
-  font-size: 1rem;
-  padding: 0.5rem;
+  font-size: 1.2rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 193, 7, 0.1);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 193, 7, 0.3);
 }
 
 .empty-state {
@@ -904,6 +928,8 @@ onMounted(() => {
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  max-width: 400px;
+  margin: 2rem auto;
 }
 
 .no-room-selected,
@@ -911,25 +937,28 @@ onMounted(() => {
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 2rem;
 }
 
 .empty-icon {
   font-size: 4rem;
   color: #ddd;
   display: block;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .empty-state h3 {
   color: #666;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   font-size: 1.5rem;
+  font-weight: 600;
 }
 
 .empty-state p {
   color: #999;
   line-height: 1.6;
   margin-bottom: 2rem;
+  font-size: 1rem;
 }
 
 /* 模态框样式 */
@@ -1112,10 +1141,30 @@ onMounted(() => {
   border-top: 1px solid #dee2e6;
 }
 
+/* 滚动条样式 */
+.schedules-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.schedules-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+.schedules-list::-webkit-scrollbar-thumb {
+  background: rgba(248, 180, 0, 0.3);
+  border-radius: 3px;
+  transition: background 0.3s ease;
+}
+
+.schedules-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(248, 180, 0, 0.5);
+}
+
 /* 响应式设计 */
-@media (max-width: 768px) {
-  .interview-schedules {
-    max-width: none;
+@media (max-width: 1024px) {
+  .schedules-list {
+    overflow-y: auto;
   }
   
   .room-selector {
@@ -1128,6 +1177,25 @@ onMounted(() => {
     flex-direction: column;
     gap: 0.5rem;
     align-items: stretch;
+    min-width: auto;
+  }
+  
+  .selector-actions {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .schedule-info {
+    flex-direction: row;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .schedules-title {
+    font-size: 1.5rem;
   }
   
   .selector-label {
@@ -1138,31 +1206,47 @@ onMounted(() => {
     max-width: none;
   }
   
-  .schedules-toolbar {
+  .selector-actions {
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.75rem;
     align-items: stretch;
   }
   
-  .schedules-list {
-    grid-template-columns: 1fr;
+  .btn-primary {
+    width: 100%;
+    justify-content: center;
   }
   
   .schedule-card {
-    flex-direction: column;
+    margin: 0 -0.5rem;
+    border-radius: 8px;
+  }
+  
+  .schedule-info {
+    padding: 1rem;
+    flex-direction: row;
     gap: 1rem;
-    align-items: stretch;
+    align-items: flex-start;
   }
   
   .schedule-actions {
-    margin-left: 0;
-    align-self: center;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
   }
   
-  .card-header {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
+  .action-btn {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .empty-state {
+    padding: 2rem 1rem;
+    margin: 1rem 0;
+  }
+  
+  .empty-icon {
+    font-size: 3rem;
   }
   
   .modal-content {
