@@ -48,46 +48,40 @@
 
       <!-- 用户个人信息 -->
       <div class="info-section">
-        <h3 class="section-title">
-          用户个人信息
-          <span v-if="isLoadingUserInfo" class="loading-text">加载中...</span>
-        </h3>
+        <h3 class="section-title">用户个人信息</h3>
         <div v-if="userInfo" class="info-grid">
           <div class="info-item">
             <label>真实姓名:</label>
             <span>{{ userInfo.realname || '未填写' }}</span>
           </div>
           <div class="info-item">
-            <label>性别:</label>
-            <span>{{ userInfo.gender || '未填写' }}</span>
+            <label>邮箱:</label>
+            <span>{{ userInfo.email || '未填写' }}</span>
           </div>
           <div class="info-item">
-            <label>学号:</label>
-            <span>{{ userInfo.student_id || '未填写' }}</span>
+            <label>昵称:</label>
+            <span>{{ userInfo.nickname || '未填写' }}</span>
           </div>
           <div class="info-item">
-            <label>院系:</label>
-            <span>{{ userInfo.department || '未填写' }}</span>
+            <label>注册时间:</label>
+            <span>{{ userInfo.registration_time ? formatDate(userInfo.registration_time) : '未填写' }}</span>
           </div>
           <div class="info-item">
-            <label>专业:</label>
-            <span>{{ userInfo.major || '未填写' }}</span>
+            <label>用户ID:</label>
+            <span>{{ userInfo.uid || '未填写' }}</span>
           </div>
           <div class="info-item">
-            <label>年级:</label>
-            <span>{{ userInfo.grade || '未填写' }}</span>
-          </div>
-          <div class="info-item">
-            <label>学历:</label>
-            <span>{{ userInfo.rank || '未填写' }}</span>
-          </div>
-          <div class="info-item">
-            <label>联系电话:</label>
-            <span>{{ userInfo.phone_number || '未填写' }}</span>
+            <label>管理权限:</label>
+            <span class="permission-info">
+              <span v-if="userInfo.is_main_leader_admin" class="admin-badge">主管理员</span>
+              <span v-else-if="userInfo.is_group_leader_admin" class="admin-badge">组长管理员</span>
+              <span v-else-if="userInfo.is_member_admin" class="admin-badge">成员管理员</span>
+              <span v-else class="user-badge">普通用户</span>
+            </span>
           </div>
         </div>
-        <div v-else-if="!isLoadingUserInfo" class="no-user-info">
-          <span class="error-text">无法获取用户信息</span>
+        <div v-else class="no-user-info">
+          <span class="info-text">用户信息未提供</span>
         </div>
       </div>
 
@@ -294,6 +288,10 @@ const props = defineProps({
   statusNames: {
     type: Array,
     default: () => []
+  },
+  userInfo: {
+    type: Object,
+    default: () => null
   }
 })
 
@@ -303,9 +301,7 @@ const emit = defineEmits(['close', 'status-updated', 'add-review'])
 const newStatus = ref('')
 const isUpdatingStatus = ref(false)
 
-// 用户信息相关
-const userInfo = ref(null)
-const isLoadingUserInfo = ref(false)
+// 用户信息从props获取，不再需要单独状态
 
 // 评审相关
 const reviews = ref([])
@@ -442,32 +438,7 @@ const deleteReview = async (reviewId) => {
   }
 }
 
-// 获取用户个人信息
-const fetchUserInfo = async () => {
-  if (!props.resumeData?.submission?.uid) {
-    console.log('缺少用户UID，无法获取用户信息')
-    return
-  }
-  
-  console.log('开始获取用户信息，UID:', props.resumeData.submission.uid)
-  isLoadingUserInfo.value = true
-  try {
-    const result = await authAPI.getAdminUserInfo(props.resumeData.submission.uid)
-    console.log('用户信息API响应:', result)
-    if (result.success) {
-      userInfo.value = result.data
-      console.log('用户信息获取成功:', result.data)
-    } else {
-      console.error('获取用户信息失败:', result.error)
-      userInfo.value = null
-    }
-  } catch (error) {
-    console.error('获取用户信息时出错:', error)
-    userInfo.value = null
-  } finally {
-    isLoadingUserInfo.value = false
-  }
-}
+// 用户信息直接从props获取，不再需要异步获取函数
 
 // 获取评审记录
 const fetchReviews = async () => {
@@ -568,9 +539,6 @@ watch(() => props.resumeData, (newData) => {
     if (newData.submission.submit_id) {
       fetchReviews()
     }
-    if (newData.submission.uid) {
-      fetchUserInfo()
-    }
   }
 }, { immediate: true })
 
@@ -580,9 +548,6 @@ onMounted(() => {
   if (props.resumeData?.submission) {
     if (props.resumeData.submission.submit_id) {
       fetchReviews()
-    }
-    if (props.resumeData.submission.uid) {
-      fetchUserInfo()
     }
   }
 })
@@ -796,6 +761,36 @@ onMounted(() => {
 .error-text {
   color: #dc3545;
   font-style: italic;
+}
+
+.info-text {
+  color: #666;
+  font-style: italic;
+}
+
+.permission-info {
+  display: flex;
+  align-items: center;
+}
+
+.admin-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: rgba(220, 53, 69, 0.2);
+  color: #721c24;
+  border: 1px solid rgba(220, 53, 69, 0.5);
+}
+
+.user-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: rgba(108, 117, 125, 0.2);
+  color: #495057;
+  border: 1px solid rgba(108, 117, 125, 0.5);
 }
 
 .status-section {

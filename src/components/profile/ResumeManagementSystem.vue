@@ -97,6 +97,7 @@
           :resumeData="viewingResume"
           :loading="detailLoading"
           :statusNames="statusNames"
+          :userInfo="viewingUserInfo"
           @close="handleDetailClose"
           @status-updated="handleStatusUpdate"
           @add-review="handleAddReview"
@@ -157,12 +158,13 @@ const filteredResumes = ref([])
 const statusNames = ref([])
 const recruitList = ref([])
 const positionList = ref([])
-const resumeDetails = ref(new Map()) // 存储简历详细信息的映射
+// 不再需要存储简历详细信息的映射，直接使用列表数据
 const userInfoCache = ref(new Map()) // 存储用户信息的缓存
 const loading = ref(false)
 const detailLoading = ref(false)
 const showDetail = ref(false)
 const viewingResume = ref(null)
+const viewingUserInfo = ref(null)
 
 // 筛选相关
 const statusFilter = ref('')
@@ -185,9 +187,8 @@ const fetchResumeList = async () => {
     if (result.success) {
       const resumes = result.data || []
       
-      // 先获取用户信息，再获取简历详细信息
+      // 只获取用户信息，不再获取简历详细信息
       await fetchUserInfos(resumes)
-      await fetchResumeDetails(resumes)
       
       resumeList.value = resumes
       applyFilters() // 应用当前筛选
@@ -203,53 +204,7 @@ const fetchResumeList = async () => {
   }
 }
 
-// 批量获取简历详细信息
-const fetchResumeDetails = async (resumes) => {
-  if (resumes.length === 0) return
-  
-  let successCount = 0
-  let failCount = 0
-  
-  // 分批处理，避免并发请求过多
-  const batchSize = 10
-  for (let i = 0; i < resumes.length; i += batchSize) {
-    const batch = resumes.slice(i, i + batchSize)
-    const batchPromises = batch.map(async (resume) => {
-      try {
-        const result = await authAPI.getResumeInfo(resume.submit_id)
-        if (result.success && result.data.info) {
-          resumeDetails.value.set(resume.submit_id, result.data.info)
-          // 将详细信息合并到简历对象中，便于筛选和显示
-          Object.assign(resume, {
-            first_choice: result.data.info.first_choice,
-            second_choice: result.data.info.second_choice
-          })
-          successCount++
-        } else {
-          throw new Error(result.error || '获取详细信息失败')
-        }
-      } catch (error) {
-        console.error(`获取简历 ${resume.submit_id} 详细信息失败:`, error)
-        failCount++
-        // 设置默认值，避免显示错误
-        Object.assign(resume, {
-          first_choice: null,
-          second_choice: null
-        })
-      }
-    })
-    
-    // 等待当前批次完成后再处理下一批次
-    await Promise.all(batchPromises)
-  }
-  
-  // 显示加载结果提示
-  if (failCount > 0 && successCount > 0) {
-    showAlert(`简历列表加载完成，${successCount}份简历详情加载成功，${failCount}份加载失败`, 'warning')
-  } else if (failCount > 0) {
-    showAlert(`简历详情加载失败，部分功能可能受限`, 'warning')
-  }
-}
+// 不再需要批量获取简历详细信息，直接使用列表中的字段
 
 // 批量获取用户信息
 const fetchUserInfos = async (resumes) => {
@@ -472,14 +427,35 @@ const handleViewDetail = async (resume) => {
   detailLoading.value = true
   showDetail.value = true
   viewingResume.value = null
+  viewingUserInfo.value = null
   
   try {
+    // 调用API获取简历详细信息
     const result = await authAPI.getResumeInfo(resume.submit_id)
     if (result.success) {
       viewingResume.value = result.data
     } else {
       showAlert('获取简历详情失败：' + result.error, 'error')
       showDetail.value = false
+      return
+    }
+    
+    // 从缓存中获取用户信息，不再调用getAdminUserInfo
+    const userInfo = userInfoCache.value.get(resume.uid)
+    if (userInfo) {
+      viewingUserInfo.value = userInfo
+    } else {
+      // 如果缓存中没有，使用resume对象中的基本信息
+      viewingUserInfo.value = {
+        realname: resume.realname || resume.display_name,
+        uid: resume.uid,
+        email: null,
+        nickname: null,
+        registration_time: null,
+        is_main_leader_admin: false,
+        is_group_leader_admin: false,
+        is_member_admin: false
+      }
     }
   } catch (error) {
     console.error('获取简历详情失败:', error)
