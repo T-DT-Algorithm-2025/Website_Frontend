@@ -664,6 +664,91 @@
                 </div>
               </div>
             </div>
+
+            <!-- 简历评审区域 -->
+            <div class="resume-section review-section">
+              <h4 class="section-title">📝 简历评审</h4>
+              
+              <!-- 添加评审 -->
+              <div class="add-review-form">
+                <h5>添加评审意见</h5>
+                <div class="review-form-grid">
+                  <div class="form-group">
+                    <label>评分 (1-100):</label>
+                    <input 
+                      type="number" 
+                      v-model="newReview.score" 
+                      min="1" 
+                      max="100" 
+                      class="score-input"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label>是否通过:</label>
+                    <select v-model="newReview.passed" class="passed-select">
+                      <option :value="true">通过</option>
+                      <option :value="false">不通过</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group full-width">
+                  <label>评审意见:</label>
+                  <textarea 
+                    v-model="newReview.comments" 
+                    rows="3" 
+                    placeholder="请输入评审意见..."
+                    class="comments-textarea"
+                  ></textarea>
+                </div>
+                <button 
+                  class="add-review-btn" 
+                  @click="addReview"
+                  :disabled="!canAddReview || isAddingReview"
+                >
+                  {{ isAddingReview ? '提交中...' : '提交评审' }}
+                </button>
+              </div>
+
+              <!-- 评审记录列表 -->
+              <div class="reviews-list-container">
+                <h5>历史评审记录</h5>
+                <div v-if="isLoadingReviews" class="loading-container small">
+                  <div class="loading-spinner small"></div>
+                  <p>加载评审记录...</p>
+                </div>
+                <div v-else-if="reviews.length > 0" class="reviews-list">
+                  <div 
+                    v-for="review in reviews" 
+                    :key="review.review_id"
+                    class="review-item"
+                  >
+                    <div class="review-header">
+                      <div class="review-meta">
+                        <span class="review-score">评分: {{ review.score }}</span>
+                        <span class="review-result" :class="{ passed: review.passed, rejected: !review.passed }">
+                          {{ review.passed ? '通过' : '不通过' }}
+                        </span>
+                        <span class="review-time">{{ formatDateTime(review.review_time) }}</span>
+                      </div>
+                      <button 
+                        class="delete-review-btn" 
+                        @click="deleteReview(review.review_id)"
+                        :disabled="isDeletingReview"
+                        title="删除评审"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                    <div class="review-content">
+                      {{ review.comments }}
+                    </div>
+                  </div>
+                </div>
+                <div v-else class="no-reviews">
+                  <p>暂无评审记录</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -684,6 +769,7 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useAlert } from '@/composables/useAlert'
+import { authAPI } from '@/api/auth.js'
 
 const props = defineProps({
   recruitId: {
@@ -757,9 +843,27 @@ const resumePhotoUrl = ref('')
 const userInfo = ref(null)
 const deleteConfirmationText = ref('')
 
+// 评审相关数据
+const reviews = ref([])
+const newReview = ref({
+  score: 80,
+  passed: true,
+  comments: ''
+})
+const isLoadingReviews = ref(false)
+const isAddingReview = ref(false)
+const isDeletingReview = ref(false)
+
 // 计算属性
 const hasActiveFilters = computed(() => {
   return filters.name || filters.status || filters.choice || filters.date
+})
+
+// 是否可以添加评审
+const canAddReview = computed(() => {
+  return newReview.value.score >= 1 && 
+         newReview.value.score <= 100 && 
+         newReview.value.comments.trim().length > 0
 })
 
 const filteredInterviews = computed(() => {
@@ -900,6 +1004,9 @@ const loadResumeData = async (submitId) => {
       
       // 加载简历照片
       loadResumePhoto(submitId)
+      
+      // 获取评审记录
+      await fetchReviews(submitId)
     } else {
       throw new Error(result.error || '获取简历信息失败')
     }
@@ -948,6 +1055,14 @@ const closeResumeModal = () => {
   currentInterview.value = null
   resumeData.value = null
   userInfo.value = null
+  
+  // 清理评审数据
+  reviews.value = []
+  newReview.value = {
+    score: 80,
+    passed: true,
+    comments: ''
+  }
   
   // 清理照片URL以释放内存
   if (resumePhotoUrl.value) {
@@ -1001,6 +1116,86 @@ const getResumeStatusClass = (status) => {
       return 'status-rejected'
     default:
       return 'status-default'
+  }
+}
+
+// 获取评审记录
+const fetchReviews = async (submitId) => {
+  if (!submitId) return
+  
+  isLoadingReviews.value = true
+  try {
+    const result = await authAPI.getResumeReviews(submitId)
+    if (result.success) {
+      reviews.value = result.data || []
+    } else {
+      console.error('获取评审记录失败:', result.error)
+      reviews.value = []
+    }
+  } catch (error) {
+    console.error('获取评审记录时出错:', error)
+    reviews.value = []
+  } finally {
+    isLoadingReviews.value = false
+  }
+}
+
+// 添加评审意见
+const addReview = async () => {
+  if (!canAddReview.value || !resumeData.value?.submission?.submit_id) return
+  
+  isAddingReview.value = true
+  try {
+    const result = await authAPI.addResumeReview(
+      resumeData.value.submission.submit_id,
+      {
+        score: newReview.value.score,
+        passed: newReview.value.passed,
+        comments: newReview.value.comments
+      }
+    )
+    
+    if (result.success) {
+      showAlert('评审提交成功', 'success')
+      // 重新获取评审记录
+      await fetchReviews(resumeData.value.submission.submit_id)
+      // 重置表单
+      newReview.value = {
+        score: 80,
+        passed: true,
+        comments: ''
+      }
+    } else {
+      showAlert('评审提交失败: ' + result.error, 'error')
+    }
+  } catch (error) {
+    console.error('添加评审时出错:', error)
+    showAlert('评审提交失败，请稍后重试', 'error')
+  } finally {
+    isAddingReview.value = false
+  }
+}
+
+// 删除评审
+const deleteReview = async (reviewId) => {
+  isDeletingReview.value = true
+  try {
+    const result = await authAPI.deleteResumeReview(reviewId)
+    
+    if (result.success) {
+      showAlert('评审删除成功', 'success')
+      // 重新获取评审记录
+      if (resumeData.value?.submission?.submit_id) {
+        await fetchReviews(resumeData.value.submission.submit_id)
+      }
+    } else {
+      showAlert('评审删除失败: ' + result.error, 'error')
+    }
+  } catch (error) {
+    console.error('删除评审时出错:', error)
+    showAlert('评审删除失败，请稍后重试', 'error')
+  } finally {
+    isDeletingReview.value = false
   }
 }
 
@@ -2430,6 +2625,240 @@ onBeforeUnmount(() => {
   margin-bottom: 1rem;
 }
 
+/* 评审区域样式 */
+.review-section {
+  background: #fff8e1;
+  border-left: 4px solid #f8b400;
+}
+
+.add-review-form {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e9ecef;
+}
+
+.add-review-form h5 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.review-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.score-input,
+.passed-select,
+.comments-textarea {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  transition: border-color 0.3s ease;
+}
+
+.score-input:focus,
+.passed-select:focus,
+.comments-textarea:focus {
+  outline: none;
+  border-color: #f8b400;
+  box-shadow: 0 0 0 2px rgba(248, 180, 0, 0.1);
+}
+
+.comments-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.add-review-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.add-review-btn:hover:not(:disabled) {
+  background: #218838;
+}
+
+.add-review-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.reviews-list-container {
+  position: relative;
+}
+
+.reviews-list-container h5 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.reviews-list {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  /* 自定义滚动条样式 */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(248, 180, 0, 0.3) transparent;
+}
+
+.reviews-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.reviews-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+.reviews-list::-webkit-scrollbar-thumb {
+  background: rgba(248, 180, 0, 0.4);
+  border-radius: 3px;
+  transition: background 0.3s ease;
+}
+
+.reviews-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(248, 180, 0, 0.6);
+}
+
+.review-item {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #e9ecef;
+  transition: box-shadow 0.3s ease;
+}
+
+.review-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.review-meta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.review-score {
+  font-weight: 600;
+  color: #333;
+  background: rgba(248, 180, 0, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.review-result {
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.review-result.passed {
+  background: rgba(40, 167, 69, 0.2);
+  color: #155724;
+}
+
+.review-result.rejected {
+  background: rgba(220, 53, 69, 0.2);
+  color: #721c24;
+}
+
+.review-time {
+  color: #666;
+  font-size: 0.8rem;
+}
+
+.delete-review-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.3s ease;
+  flex-shrink: 0;
+}
+
+.delete-review-btn:hover:not(:disabled) {
+  background: #c82333;
+}
+
+.delete-review-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.review-content {
+  color: #666;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  background: #f8f9fa;
+  padding: 0.75rem;
+  border-radius: 4px;
+  border-left: 3px solid #e9ecef;
+}
+
+.no-reviews {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-style: italic;
+}
+
+.loading-container.small {
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.loading-container.small p {
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
 /* 缩放适配和容器对齐 */
 @media (max-width: 1600px) {
   .interviews-list-container {
@@ -2677,6 +3106,32 @@ onBeforeUnmount(() => {
   .info-label {
     min-width: auto;
     font-weight: 700;
+  }
+  
+  /* 移动端评审样式优化 */
+  .review-form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .review-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .review-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .reviews-list {
+    max-height: 250px;
+  }
+  
+  .delete-review-btn {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 0.85rem;
   }
 }
 
