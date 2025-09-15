@@ -2485,6 +2485,7 @@ onBeforeUnmount(() => {
 
 .resume-photo {
   flex-shrink: 0;
+  margin-top: 2.5rem; /* 调整正面照位置，使其与学号学院信息对齐 */
 }
 
 .photo-img {
