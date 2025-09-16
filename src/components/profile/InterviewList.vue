@@ -49,6 +49,19 @@
         </div>
 
         <div class="filter-group">
+          <label class="filter-label">校区:</label>
+          <select 
+            v-model="filters.location" 
+            class="filter-select"
+            @change="applyFilters"
+          >
+            <option value="">全部地点</option>
+            <option value="浑南">浑南</option>
+            <option value="南湖">南湖</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
           <label class="filter-label">日期筛选:</label>
           <input 
             v-model="filters.date" 
@@ -796,6 +809,7 @@ const filters = reactive({
   name: '',
   status: '',
   choice: '',
+  location: '',
   date: ''
 })
 
@@ -856,7 +870,7 @@ const isDeletingReview = ref(false)
 
 // 计算属性
 const hasActiveFilters = computed(() => {
-  return filters.name || filters.status || filters.choice || filters.date
+  return filters.name || filters.status || filters.choice || filters.location || filters.date
 })
 
 // 是否可以添加评审
@@ -884,6 +898,15 @@ const filteredInterviews = computed(() => {
   
   if (filters.choice) {
     filtered = filtered.filter(interview => interview.first_choice === filters.choice)
+  }
+  
+  // 地点模糊搜索
+  if (filters.location) {
+    const locationQuery = filters.location.toLowerCase().trim()
+    filtered = filtered.filter(interview => {
+      const interviewLocation = (interview.location || '').toLowerCase()
+      return interviewLocation.includes(locationQuery)
+    })
   }
   
   if (filters.date) {
@@ -960,6 +983,7 @@ const clearFilters = () => {
   filters.name = ''
   filters.status = ''
   filters.choice = ''
+  filters.location = ''
   filters.date = ''
 }
 
