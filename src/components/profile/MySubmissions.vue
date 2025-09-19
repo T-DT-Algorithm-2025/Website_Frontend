@@ -82,6 +82,14 @@
             >
               📋 面试信息
             </button>
+            <!-- 已录取状态(status=5): 显示加入培训按钮 -->
+            <button
+              v-else-if="submission.status === 5"
+              class="action-btn join-training-btn"
+              @click="showTrainingModal(submission)"
+            >
+              🎓 加入培训
+            </button>
             <!-- 其他状态: 显示修改简历按钮 -->
             <button
               v-else
@@ -100,11 +108,48 @@
         </div>
       </div>
     </div>
+
+    <!-- 加入培训弹窗 -->
+    <div v-if="showTrainingModalFlag" class="modal-overlay" @click="closeTrainingModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h4 class="modal-title">🎓 加入培训</h4>
+          <button @click="closeTrainingModal" class="close-btn">✕</button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="training-content">
+            <div class="training-message">
+              <h3>恭喜您已通过面试！</h3>
+              <p class="message-text">请加入群聊</p>
+            </div>
+            
+            <div class="qr-code-container">
+              <img 
+                :src="qqGroupImage" 
+                alt="QQ群二维码" 
+                class="qr-code-image"
+                @error="handleImageError"
+              />
+              <p class="qr-code-caption">扫码加入QQ群</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button @click="closeTrainingModal" class="action-btn close-modal-btn">
+            关闭
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import confetti from 'canvas-confetti'
+import qqGroupImage from '@/assets/images/qq_group.jpg'
 
 const props = defineProps({
   userSubmissions: {
@@ -122,6 +167,10 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['back', 'apply-now', 'view-submission-detail', 'edit-submission', 'book-interview', 'view-interview-info'])
+
+// 培训弹窗相关状态
+const showTrainingModalFlag = ref(false)
+const currentSubmission = ref(null)
 
 const handleBack = () => {
   emit('back')
@@ -147,6 +196,70 @@ const viewInterviewInfo = (submission) => {
   emit('view-interview-info', submission)
 }
 
+// 显示培训弹窗
+const showTrainingModal = (submission) => {
+  currentSubmission.value = submission
+  showTrainingModalFlag.value = true
+  // 触发庆祝动画
+  triggerCelebrationConfetti()
+}
+
+// 庆祝动画函数
+const triggerCelebrationConfetti = () => {
+  const end = Date.now() + 3 * 1000 // 3秒
+  const colors = ['#8a2be2', '#ff6b6b', '#4ecdc4', '#45b7d1', '#ffa726']
+
+  function frame() {
+    if (Date.now() > end) return
+
+    // 左侧彩带炮
+    confetti({
+      particleCount: 2,
+      angle: 60,
+      spread: 55,
+      startVelocity: 60,
+      origin: { x: 0, y: 0.5 },
+      colors: colors,
+    })
+
+    // 右侧彩带炮
+    confetti({
+      particleCount: 2,
+      angle: 120,
+      spread: 55,
+      startVelocity: 60,
+      origin: { x: 1, y: 0.5 },
+      colors: colors,
+    })
+
+    requestAnimationFrame(frame) // 持续调用frame函数
+  }
+
+  frame()
+
+  // 额外的庆祝效果：中央爆发
+  setTimeout(() => {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: colors,
+    })
+  }, 200)
+}
+
+// 关闭培训弹窗
+const closeTrainingModal = () => {
+  showTrainingModalFlag.value = false
+  currentSubmission.value = null
+}
+
+// 处理图片加载错误
+const handleImageError = (event) => {
+  console.error('QQ群二维码图片加载失败')
+  event.target.style.display = 'none'
+}
+
 // 判断是否为等待面试状态
 const isWaitingForInterview = (submission) => {
   // 检查status值或status_name包含相关关键词
@@ -169,6 +282,7 @@ const getSubmissionStatusClass = (status) => {
     case 2: return 'status-interview' // 等待面试/已安排面试
     case 3: return 'status-passed' // 面试通过
     case 4: return 'status-rejected' // 面试未通过
+    case 5: return 'status-accepted' // 已录取
     default: return 'status-pending'
   }
 }
@@ -473,10 +587,27 @@ const formatDate = (date) => {
   transform: translateY(-1px);
 }
 
+.join-training-btn {
+  background: rgba(138, 43, 226, 0.1);
+  color: #8a2be2;
+  border: 1px solid rgba(138, 43, 226, 0.3);
+}
+
+.join-training-btn:hover:not(:disabled) {
+  background: rgba(138, 43, 226, 0.2);
+  transform: translateY(-1px);
+}
+
 .status-interview {
   background: rgba(23, 162, 184, 0.2);
   color: #0c5460;
   border: 1px solid rgba(23, 162, 184, 0.5);
+}
+
+.status-accepted {
+  background: rgba(138, 43, 226, 0.2);
+  color: #8a2be2;
+  border: 1px solid rgba(138, 43, 226, 0.5);
 }
 
 /* 滚动条样式 */
@@ -572,6 +703,187 @@ const formatDate = (date) => {
   
   .empty-icon {
     font-size: 3rem;
+  }
+}
+
+/* 培训弹窗样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-header {
+  padding: 1.5rem 1.5rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e9ecef;
+  margin-bottom: 1.5rem;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #666;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #333;
+}
+
+.modal-body {
+  padding: 0 1.5rem 1.5rem;
+}
+
+.training-content {
+  text-align: center;
+}
+
+.training-message {
+  margin-bottom: 2rem;
+}
+
+.training-message h3 {
+  color: #28a745;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.message-text {
+  color: #666;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.qr-code-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.qr-code-image {
+  max-width: 200px;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.qr-code-image:hover {
+  transform: scale(1.05);
+}
+
+.qr-code-caption {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.modal-actions {
+  padding: 0 1.5rem 1.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  border-top: 1px solid #e9ecef;
+  padding-top: 1.5rem;
+}
+
+.close-modal-btn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.close-modal-btn:hover {
+  background: #5a6268;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    margin: 1rem;
+    max-width: none;
+    width: calc(100% - 2rem);
+  }
+  
+  .modal-header {
+    padding: 1rem 1rem 0;
+    margin-bottom: 1rem;
+  }
+  
+  .modal-body {
+    padding: 0 1rem 1rem;
+  }
+  
+  .modal-actions {
+    padding: 0 1rem 1rem;
+    padding-top: 1rem;
+  }
+  
+  .qr-code-image {
+    max-width: 180px;
   }
 }
 </style>

@@ -135,11 +135,11 @@
             </div>
             <p class="interview-choice">🎯 {{ interview.first_choice || '未知志愿' }}</p>
           </div>
-          <div class="interview-status">
+          <!-- <div class="interview-status">
             <span class="status-badge" :class="getStatusBadgeClass(interview.status)">
               {{ getStatusText(interview.status) }}
             </span>
-          </div>
+          </div> -->
         </div>
         
         <div class="card-body">
@@ -231,6 +231,15 @@
             title="修改结果"
           >
             ✏️ 修改结果
+          </button>
+          
+          <button 
+            @click="manageResumeStatus(interview)"
+            class="action-btn status-btn"
+            title="管理简历状态"
+            v-if="interview.submit_id"
+          >
+            📊 状态
           </button>
           
           <button 
@@ -776,6 +785,65 @@
         </div>
       </div>
     </div>
+
+    <!-- 状态管理模态框 -->
+    <div v-if="showStatusModal" class="modal-overlay" @click="closeStatusModal">
+      <div class="modal-content small" @click.stop>
+        <div class="modal-header">
+          <h4 class="modal-title">📊 管理简历状态</h4>
+          <button @click="closeStatusModal" class="close-btn">✕</button>
+        </div>
+        
+        <div class="modal-body">
+          <div v-if="currentInterviewForStatus" class="student-info">
+            <h5>面试者信息</h5>
+            <p><strong>姓名:</strong> {{ currentInterviewForStatus.interviewee_name || '未知姓名' }}</p>
+            <p><strong>志愿:</strong> {{ currentInterviewForStatus.first_choice || '未知志愿' }}</p>
+          </div>
+          
+          <div class="status-form">
+            <div class="form-group">
+              <label class="form-label" for="status-select">
+                选择新状态 <span class="required">*</span>
+              </label>
+              <select
+                id="status-select"
+                v-model="selectedStatus"
+                class="form-select"
+                required
+              >
+                <option value="">请选择状态</option>
+                <option 
+                  v-for="status in filteredStatusNames" 
+                  :key="status.status_id" 
+                  :value="status.status_id"
+                >
+                  {{ status.status_name }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button
+            @click="closeStatusModal"
+            class="btn-secondary"
+            :disabled="isUpdatingStatus"
+          >
+            取消
+          </button>
+          <button
+            @click="updateResumeStatus"
+            class="btn-primary"
+            :disabled="!selectedStatus || isUpdatingStatus"
+          >
+            <span v-if="isUpdatingStatus" class="loading-spinner small"></span>
+            {{ isUpdatingStatus ? '更新中...' : '更新状态' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -803,6 +871,23 @@ const { showAlert } = useAlert()
 const loading = ref(false)
 const interviewsList = ref([])
 const availablePositions = ref(['算法组', '电控组', '机械组', '运营组'])
+
+// 状态管理相关
+const statusNames = ref([])
+const showStatusModal = ref(false)
+const currentInterviewForStatus = ref(null)
+const selectedStatus = ref('')
+const isUpdatingStatus = ref(false)
+
+// 面试相关的状态过滤 - 只显示面试后的状态
+const interviewRelatedStatusIds = [4, 5, 6] // 4:面试未通过, 5:已录取, 6:未参加面试
+
+// 计算属性：过滤后的状态列表，只包含面试相关状态
+const filteredStatusNames = computed(() => {
+  return statusNames.value.filter(status => 
+    interviewRelatedStatusIds.includes(status.status_id)
+  )
+})
 
 // 筛选相关
 const filters = reactive({
@@ -934,6 +1019,7 @@ watch(() => props.recruitId, (newId) => {
   if (newId) {
     fetchInterviews()
     fetchPositions()
+    fetchStatusNames()
   }
 }, { immediate: true })
 
@@ -948,6 +1034,23 @@ const fetchPositions = async () => {
     }
   } catch (error) {
     console.error('获取职位列表失败:', error)
+  }
+}
+
+// 获取状态名称列表
+const fetchStatusNames = async () => {
+  try {
+    const response = await fetch('/api/resume/status_names')
+    const result = await response.json()
+    
+    if (result.success) {
+      statusNames.value = result.data || []
+    } else {
+      throw new Error(result.error || '获取状态名称失败')
+    }
+  } catch (error) {
+    console.error('获取状态名称失败:', error)
+    showAlert('获取状态名称失败: ' + error.message, 'error')
   }
 }
 
@@ -1002,6 +1105,64 @@ const viewStudentResume = (interview) => {
   currentInterview.value = interview
   showResumeModal.value = true
   loadResumeData(interview.submit_id)
+}
+
+// 管理简历状态
+const manageResumeStatus = (interview) => {
+  if (!interview.submit_id) {
+    showAlert('未找到简历信息', 'error')
+    return
+  }
+  
+  currentInterviewForStatus.value = interview
+  selectedStatus.value = ''
+  showStatusModal.value = true
+}
+
+// 关闭状态管理模态框
+const closeStatusModal = () => {
+  showStatusModal.value = false
+  currentInterviewForStatus.value = null
+  selectedStatus.value = ''
+}
+
+// 更新简历状态
+const updateResumeStatus = async () => {
+  if (!selectedStatus.value || !currentInterviewForStatus.value?.submit_id) {
+    showAlert('请选择状态', 'warning')
+    return
+  }
+  
+  isUpdatingStatus.value = true
+  try {
+    const response = await fetch('/api/resume/admin/batch/update_status', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        submit_ids: [currentInterviewForStatus.value.submit_id],
+        new_status: parseInt(selectedStatus.value)
+      }),
+    })
+
+    const result = await response.json()
+
+    if (result.success) {
+      showAlert('简历状态更新成功', 'success')
+      closeStatusModal()
+      // 刷新面试列表以获取最新数据
+      await fetchInterviews()
+      emit('interview-updated')
+    } else {
+      throw new Error(result.error || '状态更新失败')
+    }
+  } catch (error) {
+    console.error('更新简历状态失败:', error)
+    showAlert('状态更新失败: ' + error.message, 'error')
+  } finally {
+    isUpdatingStatus.value = false
+  }
 }
 
 // 加载简历数据
@@ -1521,6 +1682,7 @@ onMounted(() => {
   if (props.recruitId) {
     fetchInterviews()
     fetchPositions()
+    fetchStatusNames()
   }
 })
 
@@ -2079,6 +2241,18 @@ onBeforeUnmount(() => {
   transform: translateY(-1px);
 }
 
+.status-btn {
+  background: rgba(255, 152, 0, 0.1);
+  color: #ff9800;
+  border: 1px solid rgba(255, 152, 0, 0.2);
+}
+
+.status-btn:hover {
+  background: rgba(255, 152, 0, 0.2);
+  color: #f57c00;
+  transform: translateY(-1px);
+}
+
 .empty-state {
   text-align: center;
   padding: 4rem 2rem;
@@ -2248,6 +2422,38 @@ onBeforeUnmount(() => {
 .form-textarea {
   resize: vertical;
   min-height: 80px;
+}
+
+.form-select {
+  width: 100%;
+  padding: 0.875rem;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: white;
+  font-family: inherit;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: #f8b400;
+  box-shadow: 0 0 0 3px rgba(248, 180, 0, 0.1);
+}
+
+.status-form {
+  margin-top: 1rem;
+}
+
+.status-form .form-group {
+  margin-bottom: 1rem;
+}
+
+.status-form h5 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .radio-group {
